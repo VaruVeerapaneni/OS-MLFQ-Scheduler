@@ -3,424 +3,648 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNIX MLFQ Scheduler Simulation - Group 7</title>
+    <title>UNIX MLFQ Simulator | Group 7</title>
     <style>
         :root {
             --primary: #2563eb;
-            --primary-dark: #1d4ed8;
+            --primary-hover: #1d4ed8;
+            --secondary: #0ea5e9;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --slate-900: #0f172a;
-            --slate-800: #1e293b;
-            --slate-700: #334155;
-            --slate-100: #f1f5f9;
-            --slate-50: #f8fafc;
+            --dark-900: #0f172a;
+            --dark-800: #1e293b;
+            --dark-700: #334155;
+            --light-100: #f1f5f9;
+            --light-50: #f8fafc;
+            --border: #e2e8f0;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background: #f8fafc; color: #1e293b; line-height: 1.5; padding-bottom: 40px; }
-        header { background: var(--slate-900); color: white; padding: 24px 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .header-title { font-size: 24px; font-weight: 700; }
-        .header-subtitle { color: #94a3b8; font-size: 14px; margin-top: 4px; }
-        .group-badge { display: inline-block; background: #3b82f6; color: white; padding: 3px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; margin-left: 10px; }
-        .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+        body { background: #f8fafc; color: #1e293b; line-height: 1.5; padding-bottom: 60px; }
         
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .kpi-card { background: white; border-radius: 12px; padding: 18px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .kpi-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; }
-        .kpi-vals { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; }
+        /* Navigation & Header */
+        header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 24px 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .header-content { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+        .logo-area h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .group-pill { background: #3b82f6; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; }
+        .logo-area p { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+        .header-links a { color: #38bdf8; text-decoration: none; font-size: 13px; font-weight: 600; padding: 8px 14px; border: 1px solid #334155; border-radius: 8px; transition: all 0.2s; }
+        .header-links a:hover { background: #334155; color: white; }
+
+        .container { max-width: 1300px; margin: 24px auto; padding: 0 20px; }
+
+        /* Members banner */
+        .members-strip { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .members-title { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .members-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+        .member-chip { background: #f1f5f9; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: #334155; border-left: 3px solid var(--primary); }
+        .member-chip span { color: var(--primary); font-weight: 700; }
+
+        /* Interactive Simulator Controls */
+        .controls-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; align-items: end; }
+        .control-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; }
+        .control-group input, .control-group select { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 600; color: #1e293b; outline: none; transition: border 0.2s; }
+        .control-group input:focus, .control-group select:focus { border-color: var(--primary); }
+        .btn-run { background: var(--primary); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+        .btn-run:hover { background: var(--primary-hover); }
+        .btn-random { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-random:hover { background: #e2e8f0; }
+
+        /* Navigation Tabs */
+        .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
+        .tab-btn { background: none; border: none; padding: 10px 18px; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; position: relative; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        /* KPI Cards Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .kpi-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .kpi-title { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
+        .kpi-values { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; }
         .kpi-val-box { }
-        .kpi-val-title { font-size: 11px; color: #94a3b8; }
-        .kpi-val { font-size: 20px; font-weight: 700; }
-        .val-fixed { color: var(--primary); }
-        .val-var { color: var(--success); }
+        .kpi-val-mode { font-size: 11px; color: #94a3b8; font-weight: 600; }
+        .kpi-val-number { font-size: 20px; font-weight: 800; }
+        .text-fixed { color: var(--primary); }
+        .text-var { color: var(--success); }
 
-        .card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 24px; overflow: hidden; }
-        .card-header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 16px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-        .card-body { padding: 20px; }
+        /* Queue Visualizer */
+        .queues-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px; margin-bottom: 24px; }
+        .queue-row { display: flex; align-items: center; margin-bottom: 12px; gap: 14px; }
+        .queue-badge { width: 150px; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 6px; text-align: center; color: white; flex-shrink: 0; }
+        .badge-q0 { background: #2563eb; }
+        .badge-q1 { background: #10b981; }
+        .badge-q2 { background: #f59e0b; }
+        .queue-track { flex-grow: 1; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; min-height: 44px; display: flex; align-items: center; padding: 4px 10px; gap: 8px; overflow-x: auto; }
+        .proc-chip { background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .proc-chip-rem { background: #e0f2fe; color: #0369a1; border-radius: 4px; padding: 1px 5px; font-size: 10px; }
 
-        .gantt-svg { width: 100%; height: 90px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        /* Gantt Chart SVG */
+        .gantt-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 24px; }
+        .gantt-container { width: 100%; overflow-x: auto; }
+        svg.gantt-svg { width: 100%; height: 95px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; }
 
+        /* Tables */
+        .table-card { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; }
+        .card-header-bar { padding: 14px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; color: #334155; display: flex; justify-content: space-between; align-items: center; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th { background: #f1f5f9; color: #475569; padding: 10px 14px; font-weight: 600; border-bottom: 1px solid #cbd5e1; }
+        th { background: #f1f5f9; color: #475569; padding: 10px 14px; font-weight: 700; border-bottom: 1px solid var(--border); }
         td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
         tr:hover { background: #f8fafc; }
-        .status-badge { padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-        .status-terminated { background: #dcfce7; color: #15803d; }
-        .status-ready { background: #fef3c7; color: #b45309; }
-        .status-running { background: #dbeafe; color: #1d4ed8; }
+        .badge-status { padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 700; }
+        .badge-term { background: #dcfce7; color: #166534; }
+        .badge-ready { background: #fef3c7; color: #92400e; }
+        .badge-run { background: #dbeafe; color: #1e40af; }
 
-        .comparison-table td:nth-child(2) { font-weight: 600; color: var(--primary); }
-        .comparison-table td:nth-child(3) { font-weight: 600; color: var(--success); }
-
-        .members-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-        .member-card { background: #f1f5f9; border-radius: 8px; padding: 12px 16px; border-left: 4px solid var(--primary); }
-        .member-id { font-size: 12px; font-weight: 700; color: var(--primary); }
-        .member-name { font-size: 14px; font-weight: 600; color: var(--slate-800); }
-
-        .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-        .tab-btn { padding: 8px 16px; border-radius: 8px; border: none; background: #e2e8f0; color: #475569; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .tab-btn.active { background: var(--primary); color: white; }
+        /* Documentation & Report tab */
+        .doc-section { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 28px; margin-bottom: 24px; line-height: 1.7; font-size: 14px; }
+        .doc-section h2 { font-size: 18px; color: var(--dark-900); margin-bottom: 14px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+        .doc-section h3 { font-size: 15px; color: var(--primary); margin: 18px 0 8px; }
+        .doc-section p, .doc-section ul { color: #334155; margin-bottom: 12px; }
+        .doc-section ul { padding-left: 24px; }
+        .code-box { background: #0f172a; color: #38bdf8; padding: 14px 18px; border-radius: 8px; font-family: monospace; font-size: 13px; margin: 12px 0; overflow-x: auto; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-            <div class="header-title">UNIX Round Robin Time Slicing with Multilevel Feedback (MLFQ) <span class="group-badge">Group 7</span></div>
-            <div class="header-subtitle">Operating Systems Project &bull; Time Slice = 3 units &bull; Fixed vs. Variable (Randomized) Burst Simulation</div>
+    <div class="header-content">
+        <div class="logo-area">
+            <h1>UNIX Multilevel Feedback Queue (MLFQ) Simulator <span class="group-pill">Group 7</span></h1>
+            <p>OS Course Project &bull; Problem #21 &bull; Round Robin Time Slicing ($Q = 3$ units) &bull; Fixed vs. Variable Burst Comparison</p>
+        </div>
+        <div class="header-links">
+            <a href="https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler" target="_blank">⭐ View on GitHub</a>
+            <a href="PROJECT_REPORT.md" target="_blank">📄 Full Project Report</a>
         </div>
     </div>
 </header>
 
 <div class="container">
-    <!-- Group Members Card -->
-    <div class="card">
-        <div class="card-header">👥 Project Group 7 Details</div>
-        <div class="card-body">
-            <div class="members-grid">
-                <div class="member-card">
-                    <div class="member-id">AP24110010509</div>
-                    <div class="member-name">VEERAPANENI VARALAKSHMI</div>
+    <!-- Group Members Banner -->
+    <div class="members-strip">
+        <div class="members-title">👥 Group Members (Group 7)</div>
+        <div class="members-tags">
+            <div class="member-chip"><span>AP24110010509</span> VEERAPANENI VARALAKSHMI</div>
+            <div class="member-chip"><span>AP24110010538</span> GANDHAM SAI POOJITHA</div>
+            <div class="member-chip"><span>AP24110012001</span> KANDIMALLA KEERTHI SREE</div>
+            <div class="member-chip"><span>AP24110011723</span> ARADHYA SINGH</div>
+        </div>
+    </div>
+
+    <!-- Interactive Simulator Controls -->
+    <div class="controls-card">
+        <div class="controls-grid">
+            <div class="control-group">
+                <label>Time Quantum (Q)</label>
+                <input type="number" id="inpQuantum" value="3" min="1" max="15">
+            </div>
+            <div class="control-group">
+                <label>Sim Time Limit (T)</label>
+                <input type="number" id="inpSimTime" value="60" min="10" max="300">
+            </div>
+            <div class="control-group">
+                <label>Processes (N)</label>
+                <input type="number" id="inpProcs" value="8" min="2" max="20">
+            </div>
+            <div class="control-group">
+                <label>Fixed Burst</label>
+                <input type="number" id="inpFixedBurst" value="6" min="1" max="30">
+            </div>
+            <div class="control-group">
+                <label>Var Burst (Min - Max)</label>
+                <div style="display:flex; gap:6px;">
+                    <input type="number" id="inpMinBurst" value="2" min="1" max="10" style="width:50%;">
+                    <input type="number" id="inpMaxBurst" value="14" min="2" max="40" style="width:50%;">
                 </div>
-                <div class="member-card">
-                    <div class="member-id">AP24110010538</div>
-                    <div class="member-name">GANDHAM SAI POOJITHA</div>
-                </div>
-                <div class="member-card">
-                    <div class="member-id">AP24110012001</div>
-                    <div class="member-name">KANDIMALLA KEERTHI SREE</div>
-                </div>
-                <div class="member-card">
-                    <div class="member-id">AP24110011723</div>
-                    <div class="member-name">ARADHYA SINGH</div>
-                </div>
+            </div>
+            <div class="control-group">
+                <label>Random Seed</label>
+                <input type="number" id="inpSeed" value="42">
+            </div>
+            <div class="control-group">
+                <button class="btn-random" onclick="randomizeSeed()">🎲 New Seed</button>
+            </div>
+            <div class="control-group">
+                <button class="btn-run" onclick="runSimulator()">▶ Run Simulation</button>
             </div>
         </div>
     </div>
 
-    <!-- KPI Grid -->
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-label">Average Waiting Time (AWT)</div>
-            <div class="kpi-vals">
-                <div class="kpi-val-box"><div class="kpi-val-title">Fixed</div><div class="kpi-val val-fixed">25.38</div></div>
-                <div class="kpi-val-box"><div class="kpi-val-title">Variable</div><div class="kpi-val val-var">14.0</div></div>
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-sim')">📊 Interactive Simulation & Gantt Charts</button>
+        <button class="tab-btn" onclick="switchTab('tab-compare')">⚖️ Side-by-Side Comparison</button>
+        <button class="tab-btn" onclick="switchTab('tab-doc')">📘 Problem Statement & Theory</button>
+    </div>
+
+    <!-- TAB 1: Live Simulator & Gantt Charts -->
+    <div id="tab-sim" class="tab-pane">
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">Average Waiting Time (AWT)</div>
+                <div class="kpi-values">
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedAWT">-</div></div>
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarAWT">-</div></div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Average Turnaround Time (ATT)</div>
+                <div class="kpi-values">
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedATT">-</div></div>
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarATT">-</div></div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Completed Processes</div>
+                <div class="kpi-values">
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedDone">-</div></div>
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarDone">-</div></div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">CPU Utilization</div>
+                <div class="kpi-values">
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedCPU">-</div></div>
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarCPU">-</div></div>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">System Throughput</div>
+                <div class="kpi-values">
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedTP">-</div></div>
+                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarTP">-</div></div>
+                </div>
             </div>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Average Turnaround Time (ATT)</div>
-            <div class="kpi-vals">
-                <div class="kpi-val-box"><div class="kpi-val-title">Fixed</div><div class="kpi-val val-fixed">31.38</div></div>
-                <div class="kpi-val-box"><div class="kpi-val-title">Variable</div><div class="kpi-val val-var">18.67</div></div>
+
+        <!-- MLFQ Priority Queues Structure Visualizer -->
+        <div class="queues-card">
+            <h3 style="font-size:14px; font-weight:700; margin-bottom:12px; color:#334155;">🔄 Multilevel Feedback Queue Hierarchy</h3>
+            <div class="queue-row">
+                <div class="queue-badge badge-q0">Q0: High Priority (RR, Q=3)</div>
+                <div class="queue-track" id="trackQ0"><span style="color:#94a3b8; font-size:12px;">New process arrivals enter here</span></div>
+            </div>
+            <div class="queue-row">
+                <div class="queue-badge badge-q1">Q1: Medium Priority (RR, Q=3)</div>
+                <div class="queue-track" id="trackQ1"><span style="color:#94a3b8; font-size:12px;">Processes that exceed Q0 time quantum demote here</span></div>
+            </div>
+            <div class="queue-row">
+                <div class="queue-badge badge-q2">Q2: Low Priority (RR, Q=3)</div>
+                <div class="queue-track" id="trackQ2"><span style="color:#94a3b8; font-size:12px;">CPU-bound batch tasks demote here</span></div>
             </div>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Completed Processes</div>
-            <div class="kpi-vals">
-                <div class="kpi-val-box"><div class="kpi-val-title">Fixed</div><div class="kpi-val val-fixed">8 / 8</div></div>
-                <div class="kpi-val-box"><div class="kpi-val-title">Variable</div><div class="kpi-val val-var">3 / 8</div></div>
+
+        <!-- Fixed Burst Gantt & Table -->
+        <div class="gantt-card">
+            <div class="card-header-bar" style="background:transparent; padding:0 0 12px 0;">
+                <span>⏱️ Scenario 1: Fixed Burst Times Gantt Chart (Burst = <span id="lblFixedBurst">6</span> units, Quantum = 3)</span>
+            </div>
+            <div class="gantt-container" id="ganttFixedContainer"></div>
+        </div>
+
+        <div class="table-card">
+            <div class="card-header-bar">Fixed Burst Process Execution Table</div>
+            <div style="overflow-x:auto;">
+                <table id="tblFixed">
+                    <thead>
+                        <tr><th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th><th>Final Queue</th><th>State</th><th>Completion</th><th>Turnaround (TAT)</th><th>Waiting (WT)</th><th>Response (RT)</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-label">CPU Utilization</div>
-            <div class="kpi-vals">
-                <div class="kpi-val-box"><div class="kpi-val-title">Fixed</div><div class="kpi-val val-fixed">80.0%</div></div>
-                <div class="kpi-val-box"><div class="kpi-val-title">Variable</div><div class="kpi-val val-var">100.0%</div></div>
+
+        <!-- Variable Burst Gantt & Table -->
+        <div class="gantt-card" style="margin-top:28px;">
+            <div class="card-header-bar" style="background:transparent; padding:0 0 12px 0;">
+                <span>🔀 Scenario 2: Variable (Randomized) Burst Times Gantt Chart (Quantum = 3)</span>
             </div>
+            <div class="gantt-container" id="ganttVarContainer"></div>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Throughput (Proc/Unit)</div>
-            <div class="kpi-vals">
-                <div class="kpi-val-box"><div class="kpi-val-title">Fixed</div><div class="kpi-val val-fixed">0.1333</div></div>
-                <div class="kpi-val-box"><div class="kpi-val-title">Variable</div><div class="kpi-val val-var">0.05</div></div>
+
+        <div class="table-card">
+            <div class="card-header-bar">Variable (Randomized) Burst Process Execution Table</div>
+            <div style="overflow-x:auto;">
+                <table id="tblVar">
+                    <thead>
+                        <tr><th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th><th>Final Queue</th><th>State</th><th>Completion</th><th>Turnaround (TAT)</th><th>Waiting (WT)</th><th>Response (RT)</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Comparative Summary Table -->
-    <div class="card">
-        <div class="card-header">📊 Side-by-Side Comparative Summary</div>
-        <div class="card-body">
-            <table class="comparison-table">
-                <thead>
-                    <tr><th>Performance Metric</th><th>Fixed Burst Mode</th><th>Variable (Randomized) Burst Mode</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Total Processes Generated</td><td>8</td><td>8</td></tr>
-                    <tr><td>Completed Processes</td><td>8</td><td>3</td></tr>
-                    <tr><td>Incomplete / In-Flight</td><td>0</td><td>5</td></tr>
-                    <tr><td>Round Robin Time Quantum</td><td>3 units</td><td>3 units</td></tr>
-                    <tr><td>Simulation Time Limit</td><td>60 units</td><td>60 units</td></tr>
-                    <tr><td>Average Waiting Time (AWT)</td><td>25.38 units</td><td>14.0 units</td></tr>
-                    <tr><td>Average Turnaround Time (ATT)</td><td>31.38 units</td><td>18.67 units</td></tr>
-                    <tr><td>Average Response Time (ART)</td><td>4.38 units</td><td>4.0 units</td></tr>
-                    <tr><td>CPU Utilization</td><td>80.0%</td><td>100.0%</td></tr>
-                    <tr><td>Throughput</td><td>0.1333</td><td>0.05</td></tr>
-                </tbody>
-            </table>
+    <!-- TAB 2: Side-by-Side Comparison -->
+    <div id="tab-compare" class="tab-pane" style="display:none;">
+        <div class="table-card">
+            <div class="card-header-bar">⚖️ Complete Side-by-Side Performance Comparison</div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Performance Metric</th>
+                            <th style="color:var(--primary);">Fixed Burst Mode</th>
+                            <th style="color:var(--success);">Variable (Randomized) Burst Mode</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblComparisonBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="doc-section">
+            <h2>💡 Core Academic Insights & Findings</h2>
+            <ul>
+                <li><strong>Interactive Process Responsiveness:</strong> In Variable Burst mode, processes with short burst times ($\le 3$ units) finish entirely in $Q_0$ without suffering queue degradation. This keeps their turnaround time exceptionally low!</li>
+                <li><strong>CPU-Bound Degradation:</strong> Processes with long execution requirements exhaust their 3-unit time slice and are demoted to $Q_1$, and subsequently to $Q_2$. This prevents heavy computations from starving short or I/O-bound processes.</li>
+                <li><strong>Fairness Under Fixed Workloads:</strong> When burst times are uniform, Round Robin time slicing distributes waiting time symmetrically across all processes in arrival order.</li>
+            </ul>
         </div>
     </div>
 
-    <!-- Fixed Burst Section -->
-    <div class="card">
-        <div class="card-header">⏱ Fixed Burst Simulation (Burst = 6 units, Quantum = 3)</div>
-        <div class="card-body">
-            <div style="margin-bottom:12px; font-weight:600; color:#475569;">Gantt Chart Timeline:</div>
-            <svg class="gantt-svg" viewBox="0 0 1100 90" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="65" x2="1080" y2="65" stroke="#94a3b8" stroke-width="1.5" /><rect x="20.0" y="15" width="53.0" height="40" fill="#3b82f6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="46.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P1 (Q0)</text><line x1="20.0" y1="62" x2="20.0" y2="68" stroke="#64748b" /><text x="20.0" y="79" font-size="9" fill="#475569" text-anchor="middle">0</text><rect x="73.0" y="15" width="53.0" height="40" fill="#10b981" stroke="#ffffff" stroke-width="1" rx="4"/><text x="99.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P2 (Q0)</text><line x1="73.0" y1="62" x2="73.0" y2="68" stroke="#64748b" /><text x="73.0" y="79" font-size="9" fill="#475569" text-anchor="middle">3</text><rect x="126.0" y="15" width="53.0" height="40" fill="#8b5cf6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="152.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P3 (Q0)</text><line x1="126.0" y1="62" x2="126.0" y2="68" stroke="#64748b" /><text x="126.0" y="79" font-size="9" fill="#475569" text-anchor="middle">6</text><rect x="179.0" y="15" width="53.0" height="40" fill="#ec4899" stroke="#ffffff" stroke-width="1" rx="4"/><text x="205.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P4 (Q0)</text><line x1="179.0" y1="62" x2="179.0" y2="68" stroke="#64748b" /><text x="179.0" y="79" font-size="9" fill="#475569" text-anchor="middle">9</text><rect x="232.0" y="15" width="53.0" height="40" fill="#f97316" stroke="#ffffff" stroke-width="1" rx="4"/><text x="258.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P5 (Q0)</text><line x1="232.0" y1="62" x2="232.0" y2="68" stroke="#64748b" /><text x="232.0" y="79" font-size="9" fill="#475569" text-anchor="middle">12</text><rect x="285.0" y="15" width="53.0" height="40" fill="#06b6d4" stroke="#ffffff" stroke-width="1" rx="4"/><text x="311.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P6 (Q0)</text><line x1="285.0" y1="62" x2="285.0" y2="68" stroke="#64748b" /><text x="285.0" y="79" font-size="9" fill="#475569" text-anchor="middle">15</text><rect x="338.0" y="15" width="53.0" height="40" fill="#eab308" stroke="#ffffff" stroke-width="1" rx="4"/><text x="364.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P7 (Q0)</text><line x1="338.0" y1="62" x2="338.0" y2="68" stroke="#64748b" /><text x="338.0" y="79" font-size="9" fill="#475569" text-anchor="middle">18</text><rect x="391.0" y="15" width="53.0" height="40" fill="#6366f1" stroke="#ffffff" stroke-width="1" rx="4"/><text x="417.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P8 (Q0)</text><line x1="391.0" y1="62" x2="391.0" y2="68" stroke="#64748b" /><text x="391.0" y="79" font-size="9" fill="#475569" text-anchor="middle">21</text><rect x="444.0" y="15" width="53.0" height="40" fill="#3b82f6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="470.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P1 (Q1)</text><line x1="444.0" y1="62" x2="444.0" y2="68" stroke="#64748b" /><text x="444.0" y="79" font-size="9" fill="#475569" text-anchor="middle">24</text><rect x="497.0" y="15" width="53.0" height="40" fill="#10b981" stroke="#ffffff" stroke-width="1" rx="4"/><text x="523.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P2 (Q1)</text><line x1="497.0" y1="62" x2="497.0" y2="68" stroke="#64748b" /><text x="497.0" y="79" font-size="9" fill="#475569" text-anchor="middle">27</text><rect x="550.0" y="15" width="53.0" height="40" fill="#8b5cf6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="576.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P3 (Q1)</text><line x1="550.0" y1="62" x2="550.0" y2="68" stroke="#64748b" /><text x="550.0" y="79" font-size="9" fill="#475569" text-anchor="middle">30</text><rect x="603.0" y="15" width="53.0" height="40" fill="#ec4899" stroke="#ffffff" stroke-width="1" rx="4"/><text x="629.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P4 (Q1)</text><line x1="603.0" y1="62" x2="603.0" y2="68" stroke="#64748b" /><text x="603.0" y="79" font-size="9" fill="#475569" text-anchor="middle">33</text><rect x="656.0" y="15" width="53.0" height="40" fill="#f97316" stroke="#ffffff" stroke-width="1" rx="4"/><text x="682.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P5 (Q1)</text><line x1="656.0" y1="62" x2="656.0" y2="68" stroke="#64748b" /><text x="656.0" y="79" font-size="9" fill="#475569" text-anchor="middle">36</text><rect x="709.0" y="15" width="53.0" height="40" fill="#06b6d4" stroke="#ffffff" stroke-width="1" rx="4"/><text x="735.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P6 (Q1)</text><line x1="709.0" y1="62" x2="709.0" y2="68" stroke="#64748b" /><text x="709.0" y="79" font-size="9" fill="#475569" text-anchor="middle">39</text><rect x="762.0" y="15" width="53.0" height="40" fill="#eab308" stroke="#ffffff" stroke-width="1" rx="4"/><text x="788.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P7 (Q1)</text><line x1="762.0" y1="62" x2="762.0" y2="68" stroke="#64748b" /><text x="762.0" y="79" font-size="9" fill="#475569" text-anchor="middle">42</text><rect x="815.0" y="15" width="53.0" height="40" fill="#6366f1" stroke="#ffffff" stroke-width="1" rx="4"/><text x="841.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P8 (Q1)</text><line x1="815.0" y1="62" x2="815.0" y2="68" stroke="#64748b" /><text x="815.0" y="79" font-size="9" fill="#475569" text-anchor="middle">45</text><rect x="868.0" y="15" width="212.0" height="40" fill="#e2e8f0" stroke="#ffffff" stroke-width="1" rx="4"/><text x="974.0" y="39" fill="#64748b" font-size="11" font-weight="bold" text-anchor="middle">IDLE</text><line x1="868.0" y1="62" x2="868.0" y2="68" stroke="#64748b" /><text x="868.0" y="79" font-size="9" fill="#475569" text-anchor="middle">48</text><line x1="1080.0" y1="62" x2="1080.0" y2="68" stroke="#64748b" /><text x="1080.0" y="79" font-size="9" fill="#475569" text-anchor="middle">60</text></svg>
-            <div style="margin-top:20px;">
-                
-    <table>
-        <thead>
-            <tr>
-                <th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th>
-                <th>Final Queue</th><th>State</th><th>Completion</th>
-                <th>Turnaround (TAT)</th><th>Waiting (WT)</th><th>Response (RT)</th>
-            </tr>
-        </thead>
-        <tbody>
+    <!-- TAB 3: Problem Statement & Documentation -->
+    <div id="tab-doc" class="tab-pane" style="display:none;">
+        <div class="doc-section">
+            <h2>📘 Course Problem Statement (Problem #21)</h2>
+            <p><strong>"UNIX operating system uses Round robin Time slicing with multilevel feedback for process scheduling. Assume that the processes (PCB's) arrive at random. Assume the time slice is 3 units. Simulate Round robin time slicing with fixed and variable (Randomized) burst times. Run the processes for fixed amount of time and find the average waiting time, average turn-around time of the processes completed."</strong></p>
             
-        <tr>
-            <td><strong>P1</strong></td>
-            <td>0</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>27</td>
-            <td><strong>27</strong></td>
-            <td><strong>21</strong></td>
-            <td>0</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P2</strong></td>
-            <td>0</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>30</td>
-            <td><strong>30</strong></td>
-            <td><strong>24</strong></td>
-            <td>3</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P3</strong></td>
-            <td>3</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>33</td>
-            <td><strong>30</strong></td>
-            <td><strong>24</strong></td>
-            <td>3</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P4</strong></td>
-            <td>4</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>36</td>
-            <td><strong>32</strong></td>
-            <td><strong>26</strong></td>
-            <td>5</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P5</strong></td>
-            <td>7</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>39</td>
-            <td><strong>32</strong></td>
-            <td><strong>26</strong></td>
-            <td>5</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P6</strong></td>
-            <td>7</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>42</td>
-            <td><strong>35</strong></td>
-            <td><strong>29</strong></td>
-            <td>8</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P7</strong></td>
-            <td>8</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>45</td>
-            <td><strong>37</strong></td>
-            <td><strong>31</strong></td>
-            <td>10</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P8</strong></td>
-            <td>20</td>
-            <td>6</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q1</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>48</td>
-            <td><strong>28</strong></td>
-            <td><strong>22</strong></td>
-            <td>1</td>
-        </tr>
-        
-        </tbody>
-    </table>
-    
-            </div>
-        </div>
-    </div>
+            <h3>🎓 Course & Group Information</h3>
+            <ul>
+                <li><strong>Course:</strong> Operating Systems</li>
+                <li><strong>Project Group:</strong> Group 7</li>
+                <li><strong>Team Members:</strong>
+                    <ul>
+                        <li>AP24110010509 — VEERAPANENI VARALAKSHMI</li>
+                        <li>AP24110010538 — GANDHAM SAI POOJITHA</li>
+                        <li>AP24110012001 — KANDIMALLA KEERTHI SREE</li>
+                        <li>AP24110011723 — ARADHYA SINGH</li>
+                    </ul>
+                </li>
+            </ul>
 
-    <!-- Variable Burst Section -->
-    <div class="card">
-        <div class="card-header">🔀 Variable (Randomized) Burst Simulation (Quantum = 3)</div>
-        <div class="card-body">
-            <div style="margin-bottom:12px; font-weight:600; color:#475569;">Gantt Chart Timeline:</div>
-            <svg class="gantt-svg" viewBox="0 0 1100 90" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="65" x2="1080" y2="65" stroke="#94a3b8" stroke-width="1.5" /><rect x="20.0" y="15" width="53.0" height="40" fill="#3b82f6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="46.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P1 (Q0)</text><line x1="20.0" y1="62" x2="20.0" y2="68" stroke="#64748b" /><text x="20.0" y="79" font-size="9" fill="#475569" text-anchor="middle">0</text><rect x="73.0" y="15" width="53.0" height="40" fill="#10b981" stroke="#ffffff" stroke-width="1" rx="4"/><text x="99.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P2 (Q0)</text><line x1="73.0" y1="62" x2="73.0" y2="68" stroke="#64748b" /><text x="73.0" y="79" font-size="9" fill="#475569" text-anchor="middle">3</text><rect x="126.0" y="15" width="53.0" height="40" fill="#8b5cf6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="152.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P3 (Q0)</text><line x1="126.0" y1="62" x2="126.0" y2="68" stroke="#64748b" /><text x="126.0" y="79" font-size="9" fill="#475569" text-anchor="middle">6</text><rect x="179.0" y="15" width="53.0" height="40" fill="#ec4899" stroke="#ffffff" stroke-width="1" rx="4"/><text x="205.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P4 (Q0)</text><line x1="179.0" y1="62" x2="179.0" y2="68" stroke="#64748b" /><text x="179.0" y="79" font-size="9" fill="#475569" text-anchor="middle">9</text><rect x="232.0" y="15" width="53.0" height="40" fill="#f97316" stroke="#ffffff" stroke-width="1" rx="4"/><text x="258.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P5 (Q0)</text><line x1="232.0" y1="62" x2="232.0" y2="68" stroke="#64748b" /><text x="232.0" y="79" font-size="9" fill="#475569" text-anchor="middle">12</text><rect x="285.0" y="15" width="53.0" height="40" fill="#06b6d4" stroke="#ffffff" stroke-width="1" rx="4"/><text x="311.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P6 (Q0)</text><line x1="285.0" y1="62" x2="285.0" y2="68" stroke="#64748b" /><text x="285.0" y="79" font-size="9" fill="#475569" text-anchor="middle">15</text><rect x="338.0" y="15" width="53.0" height="40" fill="#eab308" stroke="#ffffff" stroke-width="1" rx="4"/><text x="364.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P7 (Q0)</text><line x1="338.0" y1="62" x2="338.0" y2="68" stroke="#64748b" /><text x="338.0" y="79" font-size="9" fill="#475569" text-anchor="middle">18</text><rect x="391.0" y="15" width="53.0" height="40" fill="#6366f1" stroke="#ffffff" stroke-width="1" rx="4"/><text x="417.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P8 (Q0)</text><line x1="391.0" y1="62" x2="391.0" y2="68" stroke="#64748b" /><text x="391.0" y="79" font-size="9" fill="#475569" text-anchor="middle">21</text><rect x="444.0" y="15" width="53.0" height="40" fill="#3b82f6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="470.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P1 (Q1)</text><line x1="444.0" y1="62" x2="444.0" y2="68" stroke="#64748b" /><text x="444.0" y="79" font-size="9" fill="#475569" text-anchor="middle">24</text><rect x="497.0" y="15" width="53.0" height="40" fill="#8b5cf6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="523.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P3 (Q1)</text><line x1="497.0" y1="62" x2="497.0" y2="68" stroke="#64748b" /><text x="497.0" y="79" font-size="9" fill="#475569" text-anchor="middle">27</text><rect x="550.0" y="15" width="53.0" height="40" fill="#ec4899" stroke="#ffffff" stroke-width="1" rx="4"/><text x="576.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P4 (Q1)</text><line x1="550.0" y1="62" x2="550.0" y2="68" stroke="#64748b" /><text x="550.0" y="79" font-size="9" fill="#475569" text-anchor="middle">30</text><rect x="603.0" y="15" width="53.0" height="40" fill="#f97316" stroke="#ffffff" stroke-width="1" rx="4"/><text x="629.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P5 (Q1)</text><line x1="603.0" y1="62" x2="603.0" y2="68" stroke="#64748b" /><text x="603.0" y="79" font-size="9" fill="#475569" text-anchor="middle">33</text><rect x="656.0" y="15" width="53.0" height="40" fill="#eab308" stroke="#ffffff" stroke-width="1" rx="4"/><text x="682.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P7 (Q1)</text><line x1="656.0" y1="62" x2="656.0" y2="68" stroke="#64748b" /><text x="656.0" y="79" font-size="9" fill="#475569" text-anchor="middle">36</text><rect x="709.0" y="15" width="53.0" height="40" fill="#6366f1" stroke="#ffffff" stroke-width="1" rx="4"/><text x="735.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P8 (Q1)</text><line x1="709.0" y1="62" x2="709.0" y2="68" stroke="#64748b" /><text x="709.0" y="79" font-size="9" fill="#475569" text-anchor="middle">39</text><rect x="762.0" y="15" width="53.0" height="40" fill="#3b82f6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="788.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P1 (Q2)</text><line x1="762.0" y1="62" x2="762.0" y2="68" stroke="#64748b" /><text x="762.0" y="79" font-size="9" fill="#475569" text-anchor="middle">42</text><rect x="815.0" y="15" width="53.0" height="40" fill="#8b5cf6" stroke="#ffffff" stroke-width="1" rx="4"/><text x="841.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P3 (Q2)</text><line x1="815.0" y1="62" x2="815.0" y2="68" stroke="#64748b" /><text x="815.0" y="79" font-size="9" fill="#475569" text-anchor="middle">45</text><rect x="868.0" y="15" width="53.0" height="40" fill="#ec4899" stroke="#ffffff" stroke-width="1" rx="4"/><text x="894.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P4 (Q2)</text><line x1="868.0" y1="62" x2="868.0" y2="68" stroke="#64748b" /><text x="868.0" y="79" font-size="9" fill="#475569" text-anchor="middle">48</text><rect x="921.0" y="15" width="53.0" height="40" fill="#f97316" stroke="#ffffff" stroke-width="1" rx="4"/><text x="947.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P5 (Q2)</text><line x1="921.0" y1="62" x2="921.0" y2="68" stroke="#64748b" /><text x="921.0" y="79" font-size="9" fill="#475569" text-anchor="middle">51</text><rect x="974.0" y="15" width="53.0" height="40" fill="#eab308" stroke="#ffffff" stroke-width="1" rx="4"/><text x="1000.5" y="39" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">P7 (Q2)</text><line x1="974.0" y1="62" x2="974.0" y2="68" stroke="#64748b" /><text x="974.0" y="79" font-size="9" fill="#475569" text-anchor="middle">54</text><rect x="1027.0" y="15" width="35.3" height="40" fill="#6366f1" stroke="#ffffff" stroke-width="1" rx="4"/><text x="1044.7" y="39" fill="#ffffff" font-size="9" text-anchor="middle">P8</text><line x1="1027.0" y1="62" x2="1027.0" y2="68" stroke="#64748b" /><text x="1027.0" y="79" font-size="9" fill="#475569" text-anchor="middle">57</text><rect x="1062.3" y="15" width="17.7" height="40" fill="#3b82f6" stroke="#ffffff" stroke-width="1" rx="4"/><line x1="1062.3" y1="62" x2="1062.3" y2="68" stroke="#64748b" /><text x="1062.3" y="79" font-size="9" fill="#475569" text-anchor="middle">59</text><line x1="1080.0" y1="62" x2="1080.0" y2="68" stroke="#64748b" /><text x="1080.0" y="79" font-size="9" fill="#475569" text-anchor="middle">60</text></svg>
-            <div style="margin-top:20px;">
-                
-    <table>
-        <thead>
-            <tr>
-                <th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th>
-                <th>Final Queue</th><th>State</th><th>Completion</th>
-                <th>Turnaround (TAT)</th><th>Waiting (WT)</th><th>Response (RT)</th>
-            </tr>
-        </thead>
-        <tbody>
-            
-        <tr>
-            <td><strong>P1</strong></td>
-            <td>0</td>
-            <td>13</td>
-            <td>3</td>
-            <td><span class="group-badge" style="background:#64748b;">Q2</span></td>
-            <td><span class="status-badge status-ready">RUNNING</span></td>
-            <td>-</td>
-            <td><strong>-</strong></td>
-            <td><strong>50</strong></td>
-            <td>0</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P2</strong></td>
-            <td>0</td>
-            <td>3</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q0</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>6</td>
-            <td><strong>6</strong></td>
-            <td><strong>3</strong></td>
-            <td>3</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P3</strong></td>
-            <td>3</td>
-            <td>12</td>
-            <td>3</td>
-            <td><span class="group-badge" style="background:#64748b;">Q2</span></td>
-            <td><span class="status-badge status-ready">READY</span></td>
-            <td>-</td>
-            <td><strong>-</strong></td>
-            <td><strong>48</strong></td>
-            <td>3</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P4</strong></td>
-            <td>4</td>
-            <td>13</td>
-            <td>4</td>
-            <td><span class="group-badge" style="background:#64748b;">Q2</span></td>
-            <td><span class="status-badge status-ready">READY</span></td>
-            <td>-</td>
-            <td><strong>-</strong></td>
-            <td><strong>47</strong></td>
-            <td>5</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P5</strong></td>
-            <td>7</td>
-            <td>10</td>
-            <td>1</td>
-            <td><span class="group-badge" style="background:#64748b;">Q2</span></td>
-            <td><span class="status-badge status-ready">READY</span></td>
-            <td>-</td>
-            <td><strong>-</strong></td>
-            <td><strong>44</strong></td>
-            <td>5</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P6</strong></td>
-            <td>7</td>
-            <td>3</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q0</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>18</td>
-            <td><strong>11</strong></td>
-            <td><strong>8</strong></td>
-            <td>8</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P7</strong></td>
-            <td>8</td>
-            <td>11</td>
-            <td>2</td>
-            <td><span class="group-badge" style="background:#64748b;">Q2</span></td>
-            <td><span class="status-badge status-ready">READY</span></td>
-            <td>-</td>
-            <td><strong>-</strong></td>
-            <td><strong>43</strong></td>
-            <td>10</td>
-        </tr>
-        
-        <tr>
-            <td><strong>P8</strong></td>
-            <td>20</td>
-            <td>8</td>
-            <td>0</td>
-            <td><span class="group-badge" style="background:#64748b;">Q2</span></td>
-            <td><span class="status-badge status-terminated">TERMINATED</span></td>
-            <td>59</td>
-            <td><strong>39</strong></td>
-            <td><strong>31</strong></td>
-            <td>1</td>
-        </tr>
-        
-        </tbody>
-    </table>
-    
-            </div>
+            <h3>⚙️ Scheduling Rules Modeled</h3>
+            <ul>
+                <li><strong>Multi-Level Priority Queues:</strong> 3 queues ($Q_0$: High, $Q_1$: Medium, $Q_2$: Low).</li>
+                <li><strong>Round Robin Slicing:</strong> Strict time quantum of 3 units ($Q = 3$).</li>
+                <li><strong>Priority Feedback Demotion:</strong> A process that uses up its 3 units without completing is demoted to the next lower queue ($Q_i 	o Q_{i+1}$).</li>
+                <li><strong>Priority Preemption:</strong> If a new process arrives at higher priority ($Q_0$) while a lower queue process is running, the CPU immediately dispatches the higher priority process.</li>
+                <li><strong>Fixed Simulation Horizon ($T_{sim}$):</strong> Evaluates completed processes within a designated observation timeframe and computes interim metrics for in-flight tasks.</li>
+            </ul>
         </div>
     </div>
 </div>
+
+<script>
+// Pseudo-Random Number Generator for reproducible testing
+class PRNG {
+    constructor(seed) { this.m = 0x80000000; this.a = 1103515245; this.c = 12345; this.state = seed ? seed : Math.floor(Math.random() * (this.m - 1)); }
+    nextInt(min, max) { this.state = (this.a * this.state + this.c) % this.m; return min + Math.floor((this.state / this.m) * (max - min + 1)); }
+}
+
+const PID_COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#f97316", "#06b6d4", "#eab308", "#6366f1", "#14b8a6", "#f43f5e", "#84cc16", "#a855f7"];
+
+// MLFQ Process Simulation Engine in JavaScript
+function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
+    const procs = processes.map(p => ({
+        pid: p.pid, arrival: p.arrival, burst: p.burst, remaining: p.burst,
+        queue: 0, state: "NEW", startTime: null, completionTime: null,
+        tat: null, wt: 0, rt: null, sliceSpent: 0
+    }));
+
+    const arrivals = [...procs].sort((a, b) => a.arrival - b.arrival);
+    const queues = Array.from({ length: numQueues }, () => []);
+    const gantt = [];
+    const completed = [];
+
+    let curTime = 0;
+    let running = null;
+    let sliceRemaining = 0;
+    let busyTime = 0;
+    let idleTime = 0;
+
+    while (curTime < maxTime) {
+        // 1. Arriving processes
+        while (arrivals.length > 0 && arrivals[0].arrival <= curTime) {
+            const arriving = arrivals.shift();
+            arriving.state = "READY";
+            arriving.queue = 0;
+            arriving.sliceSpent = 0;
+            queues[0].push(arriving);
+        }
+
+        // 2. Preemption
+        if (running) {
+            let higherReady = false;
+            for (let q = 0; q < running.queue; q++) {
+                if (queues[q].length > 0) { higherReady = true; break; }
+            }
+            if (higherReady) {
+                running.state = "READY";
+                queues[running.queue].unshift(running);
+                running = null;
+                sliceRemaining = 0;
+            }
+        }
+
+        // 3. Dispatch
+        if (!running) {
+            for (let q = 0; q < numQueues; q++) {
+                if (queues[q].length > 0) {
+                    running = queues[q].shift();
+                    sliceRemaining = timeSlice;
+                    break;
+                }
+            }
+        }
+
+        // 4. Execution
+        if (running) {
+            if (running.startTime === null) {
+                running.startTime = curTime;
+                running.rt = curTime - running.arrival;
+            }
+
+            // Gantt
+            if (gantt.length > 0 && gantt[gantt.length - 1].pid === running.pid && gantt[gantt.length - 1].queue === running.queue && gantt[gantt.length - 1].end === curTime) {
+                gantt[gantt.length - 1].end = curTime + 1;
+            } else {
+                gantt.push({ pid: running.pid, queue: running.queue, start: curTime, end: curTime + 1 });
+            }
+
+            running.remaining--;
+            running.sliceSpent++;
+            busyTime++;
+            sliceRemaining--;
+            curTime++;
+
+            if (running.remaining === 0) {
+                running.completionTime = curTime;
+                running.state = "TERMINATED";
+                running.tat = curTime - running.arrival;
+                running.wt = running.tat - running.burst;
+                completed.push(running);
+                running = null;
+                sliceRemaining = 0;
+            } else if (sliceRemaining === 0) {
+                if (running.queue < numQueues - 1) running.queue++;
+                running.sliceSpent = 0;
+                running.state = "READY";
+                queues[running.queue].push(running);
+                running = null;
+            }
+        } else {
+            // Idle
+            if (gantt.length > 0 && gantt[gantt.length - 1].pid === "IDLE" && gantt[gantt.length - 1].end === curTime) {
+                gantt[gantt.length - 1].end = curTime + 1;
+            } else {
+                gantt.push({ pid: "IDLE", queue: -1, start: curTime, end: curTime + 1 });
+            }
+            idleTime++;
+            curTime++;
+
+            if (arrivals.length === 0 && queues.every(q => q.length === 0)) {
+                const rem = maxTime - curTime;
+                if (rem > 0) {
+                    idleTime += rem;
+                    if (gantt.length > 0 && gantt[gantt.length - 1].pid === "IDLE") gantt[gantt.length - 1].end = maxTime;
+                    else gantt.push({ pid: "IDLE", queue: -1, start: curTime, end: maxTime });
+                    curTime = maxTime;
+                }
+                break;
+            }
+        }
+    }
+
+    if (running && running.remaining > 0) queues[running.queue].unshift(running);
+
+    // Incomplete processes interim waiting time
+    procs.forEach(p => {
+        if (p.remaining > 0 && curTime >= p.arrival) {
+            const timeInSys = curTime - p.arrival;
+            const executed = p.burst - p.remaining;
+            p.wt = Math.max(0, timeInSys - executed);
+        }
+    });
+
+    const doneCount = completed.length;
+    const awt = doneCount > 0 ? (completed.reduce((a, b) => a + b.wt, 0) / doneCount).toFixed(2) : "0.0";
+    const att = doneCount > 0 ? (completed.reduce((a, b) => a + b.tat, 0) / doneCount).toFixed(2) : "0.0";
+    const art = doneCount > 0 ? (completed.reduce((a, b) => a + (b.rt || 0), 0) / doneCount).toFixed(2) : "0.0";
+    const cpu = ((busyTime / Math.max(1, curTime)) * 100).toFixed(1);
+    const tp = (doneCount / Math.max(1, curTime)).toFixed(4);
+
+    return { procs, completed, gantt, awt, att, art, cpu, tp, doneCount, total: procs.length, busyTime, idleTime, queues };
+}
+
+function renderGanttSVG(segments, maxTime) {
+    const totalTime = Math.max(maxTime, segments.length > 0 ? segments[segments.length - 1].end : 1);
+    const viewWidth = 1100;
+    const barY = 16, barH = 38, axisY = 66;
+    const plotW = viewWidth - 40;
+    const scale = plotW / totalTime;
+
+    let svg = `<svg class="gantt-svg" viewBox="0 0 ${viewWidth} 90" xmlns="http://www.w3.org/2000/svg">`;
+    svg += `<line x1="20" y1="${axisY}" x2="${viewWidth - 20}" y2="${axisY}" stroke="#94a3b8" stroke-width="1.5" />`;
+
+    segments.forEach(seg => {
+        const x1 = 20 + (seg.start * scale);
+        const x2 = 20 + (seg.end * scale);
+        const w = Math.max(1, x2 - x1);
+
+        let color = "#e2e8f0", textCol = "#64748b", label = "IDLE";
+        if (seg.pid !== "IDLE") {
+            const pNum = parseInt(seg.pid.replace("P", "")) || 1;
+            color = PID_COLORS[(pNum - 1) % PID_COLORS.length];
+            textCol = "#ffffff";
+            label = `${seg.pid} (Q${seg.queue})`;
+        }
+
+        svg += `<rect x="${x1.toFixed(1)}" y="${barY}" width="${w.toFixed(1)}" height="${barH}" fill="${color}" stroke="#ffffff" stroke-width="1" rx="4"/>`;
+        if (w > 36) svg += `<text x="${((x1 + x2)/2).toFixed(1)}" y="${barY + 23}" fill="${textCol}" font-size="11" font-weight="bold" text-anchor="middle">${label}</text>`;
+        else if (w > 18) svg += `<text x="${((x1 + x2)/2).toFixed(1)}" y="${barY + 23}" fill="${textCol}" font-size="9" text-anchor="middle">${seg.pid}</text>`;
+
+        svg += `<line x1="${x1.toFixed(1)}" y1="${axisY - 3}" x2="${x1.toFixed(1)}" y2="${axisY + 3}" stroke="#64748b"/>`;
+        svg += `<text x="${x1.toFixed(1)}" y="${axisY + 14}" font-size="9" fill="#475569" text-anchor="middle">${seg.start}</text>`;
+    });
+
+    const lastX = 20 + (totalTime * scale);
+    svg += `<line x1="${lastX.toFixed(1)}" y1="${axisY - 3}" x2="${lastX.toFixed(1)}" y2="${axisY + 3}" stroke="#64748b"/>`;
+    svg += `<text x="${lastX.toFixed(1)}" y="${axisY + 14}" font-size="9" fill="#475569" text-anchor="middle">${totalTime}</text>`;
+    svg += `</svg>`;
+    return svg;
+}
+
+function renderTable(tableId, procs) {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    tbody.innerHTML = "";
+    procs.forEach(p => {
+        const isDone = p.remaining === 0;
+        const badgeCls = isDone ? "badge-term" : "badge-ready";
+        const row = `<tr>
+            <td><strong>${p.pid}</strong></td>
+            <td>${p.arrival}</td>
+            <td>${p.burst}</td>
+            <td>${p.remaining}</td>
+            <td><span class="group-pill" style="background:#64748b; font-size:10px;">Q${p.queue}</span></td>
+            <td><span class="badge-status ${badgeCls}">${isDone ? 'TERMINATED' : 'READY'}</span></td>
+            <td>${p.completionTime !== null ? p.completionTime : '-'}</td>
+            <td><strong>${p.tat !== null ? p.tat : '-'}</strong></td>
+            <td><strong>${p.wt}</strong></td>
+            <td>${p.rt !== null ? p.rt : '-'}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+    });
+}
+
+function runSimulator() {
+    const q = parseInt(document.getElementById("inpQuantum").value) || 3;
+    const simTime = parseInt(document.getElementById("inpSimTime").value) || 60;
+    const n = parseInt(document.getElementById("inpProcs").value) || 8;
+    const fixedBurst = parseInt(document.getElementById("inpFixedBurst").value) || 6;
+    const minBurst = parseInt(document.getElementById("inpMinBurst").value) || 2;
+    const maxBurst = parseInt(document.getElementById("inpMaxBurst").value) || 14;
+    const seed = parseInt(document.getElementById("inpSeed").value) || 42;
+
+    document.getElementById("lblFixedBurst").innerText = fixedBurst;
+
+    const prng = new PRNG(seed);
+    const arrivals = [0];
+    for (let i = 1; i < n; i++) arrivals.push(prng.nextInt(0, 20));
+    arrivals.sort((a, b) => a - b);
+
+    const fixedWorkload = [];
+    const varWorkload = [];
+    for (let i = 0; i < n; i++) {
+        const pid = `P${i + 1}`;
+        const arr = arrivals[i];
+        fixedWorkload.push({ pid, arrival: arr, burst: fixedBurst });
+        varWorkload.push({ pid, arrival: arr, burst: prng.nextInt(minBurst, maxBurst) });
+    }
+
+    const resFixed = simulateMLFQ(fixedWorkload, q, simTime, 3);
+    const resVar = simulateMLFQ(varWorkload, q, simTime, 3);
+
+    // Update KPI Cards
+    document.getElementById("valFixedAWT").innerText = resFixed.awt;
+    document.getElementById("valVarAWT").innerText = resVar.awt;
+    document.getElementById("valFixedATT").innerText = resFixed.att;
+    document.getElementById("valVarATT").innerText = resVar.att;
+    document.getElementById("valFixedDone").innerText = `${resFixed.doneCount} / ${n}`;
+    document.getElementById("valVarDone").innerText = `${resVar.doneCount} / ${n}`;
+    document.getElementById("valFixedCPU").innerText = `${resFixed.cpu}%`;
+    document.getElementById("valVarCPU").innerText = `${resVar.cpu}%`;
+    document.getElementById("valFixedTP").innerText = resFixed.tp;
+    document.getElementById("valVarTP").innerText = resVar.tp;
+
+    // Render Gantt
+    document.getElementById("ganttFixedContainer").innerHTML = renderGanttSVG(resFixed.gantt, simTime);
+    document.getElementById("ganttVarContainer").innerHTML = renderGanttSVG(resVar.gantt, simTime);
+
+    // Render Tables
+    renderTable("tblFixed", resFixed.procs);
+    renderTable("tblVar", resVar.procs);
+
+    // Render Queue Tracks (from Variable mode state)
+    renderQueueTracks(resVar);
+
+    // Render Comparison Table
+    renderComparisonTable(resFixed, resVar, n, simTime, q);
+}
+
+function renderQueueTracks(res) {
+    const q0El = document.getElementById("trackQ0");
+    const q1El = document.getElementById("trackQ1");
+    const q2El = document.getElementById("trackQ2");
+
+    q0El.innerHTML = ""; q1El.innerHTML = ""; q2El.innerHTML = "";
+
+    const activeQ0 = res.procs.filter(p => p.remaining > 0 && p.queue === 0);
+    const activeQ1 = res.procs.filter(p => p.remaining > 0 && p.queue === 1);
+    const activeQ2 = res.procs.filter(p => p.remaining > 0 && p.queue === 2);
+
+    if (activeQ0.length === 0) q0El.innerHTML = '<span style="color:#94a3b8; font-size:12px;">Empty (all jobs completed or demoted)</span>';
+    else activeQ0.forEach(p => q0El.innerHTML += `<div class="proc-chip">${p.pid} <span class="proc-chip-rem">rem:${p.remaining}</span></div>`);
+
+    if (activeQ1.length === 0) q1El.innerHTML = '<span style="color:#94a3b8; font-size:12px;">Empty</span>';
+    else activeQ1.forEach(p => q1El.innerHTML += `<div class="proc-chip">${p.pid} <span class="proc-chip-rem">rem:${p.remaining}</span></div>`);
+
+    if (activeQ2.length === 0) q2El.innerHTML = '<span style="color:#94a3b8; font-size:12px;">Empty</span>';
+    else activeQ2.forEach(p => q2El.innerHTML += `<div class="proc-chip">${p.pid} <span class="proc-chip-rem">rem:${p.remaining}</span></div>`);
+}
+
+function renderComparisonTable(f, v, n, simTime, q) {
+    const tbody = document.getElementById("tblComparisonBody");
+    tbody.innerHTML = `
+        <tr><td>Total Processes Generated</td><td>${n}</td><td>${n}</td></tr>
+        <tr><td>Completed Processes</td><td><strong>${f.doneCount}</strong></td><td><strong>${v.doneCount}</strong></td></tr>
+        <tr><td>Incomplete / In-Flight</td><td>${n - f.doneCount}</td><td>${n - v.doneCount}</td></tr>
+        <tr><td>Round Robin Time Quantum</td><td>${q} units</td><td>${q} units</td></tr>
+        <tr><td>Simulation Time Limit</td><td>${simTime} units</td><td>${simTime} units</td></tr>
+        <tr><td>Average Waiting Time (AWT)</td><td><strong>${f.awt} units</strong></td><td><strong>${v.awt} units</strong></td></tr>
+        <tr><td>Average Turnaround Time (ATT)</td><td><strong>${f.att} units</strong></td><td><strong>${v.att} units</strong></td></tr>
+        <tr><td>Average Response Time (ART)</td><td>${f.art} units</td><td>${v.art} units</td></tr>
+        <tr><td>CPU Utilization</td><td><strong>${f.cpu}%</strong></td><td><strong>${v.cpu}%</strong></td></tr>
+        <tr><td>Throughput (processes/unit)</td><td>${f.tp}</td><td>${v.tp}</td></tr>
+    `;
+}
+
+function randomizeSeed() {
+    document.getElementById("inpSeed").value = Math.floor(Math.random() * 9999) + 1;
+    runSimulator();
+}
+
+function switchTab(tabId) {
+    document.querySelectorAll(".tab-pane").forEach(el => el.style.display = "none");
+    document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+    document.getElementById(tabId).style.display = "block";
+    event.currentTarget.classList.add("active");
+}
+
+// Initial Run on Page Load
+window.onload = runSimulator;
+</script>
 
 </body>
 </html>
