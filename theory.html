@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIX MLFQ Theory & Problem #21 | Operating Systems</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">UNIX MLFQ Scheduler</div>
+            </div>
+            <span class="brand-tag">Problem #21</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">🎮 Simulator</a></li>\n            <li><a href="comparison.html" class="nav-link">⚖️ Comparison</a></li>\n            <li><a href="calculations.html" class="nav-link">🧮 Math & Formulas</a></li>\n            <li><a href="theory.html" class="nav-link active">📘 Theory & Rules</a></li>\n            <li><a href="docs.html" class="nav-link">📖 Guide & Docs</a></li>\n        </ul>
+        <div class="nav-actions">
+            <a href="https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler" target="_blank" class="nav-gh-btn">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">📘 UNIX MLFQ Scheduling Theory & Problem Statement</h1>
+            <p class="page-subtitle">Algorithmic principles, design goals, and execution rules of Multilevel Feedback Queues</p>
+        </div>
+    </div>
+
+    <!-- Problem Statement Card -->
+    <div class="panel" style="border-left: 4px solid var(--cyan);">
+        <div class="panel-header">
+            <div class="panel-title">📋 Assigned Problem Statement (Problem #21)</div>
+        </div>
+        <p style="font-size:15px; color:#e2e8f0; font-style:italic; line-height:1.7;">
+            &ldquo;UNIX operating system uses Round robin Time slicing with multilevel feedback for process scheduling. 
+            Assume that the processes (PCB&apos;s) arrive at random. Assume the time slice is 3 units. 
+            Simulate Round robin time slicing with fixed and variable (Randomized) burst times. 
+            Run the processes for fixed amount of time and find the average waiting time, average turn-around time of the processes completed.&rdquo;
+        </p>
+    </div>
+
+    <!-- The 5 Core Scheduling Rules -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">⚖️ The Five Core Rules of MLFQ Scheduling</div>
+        </div>
+
+        <div class="rule-card">
+            <h3>Rule 1: Priority Selection</h3>
+            <p>If Priority(A) &gt; Priority(B), process A executes. Processes situated in higher priority queues (Q0) are always scheduled before those in lower queues (Q1, Q2).</p>
+        </div>
+
+        <div class="rule-card">
+            <h3>Rule 2: Round Robin within Priority Level</h3>
+            <p>If Priority(A) = Priority(B), processes share CPU execution in Round Robin fashion using a time slice quantum of exactly <strong>3 units</strong>.</p>
+        </div>
+
+        <div class="rule-card">
+            <h3>Rule 3: Top-Queue Entry for New Arrivals</h3>
+            <p>When any new process arrives into the system at random timestamp T, it is immediately enqueued into the highest priority queue (Q0).</p>
+        </div>
+
+        <div class="rule-card">
+            <h3>Rule 4: Feedback Priority Demotion</h3>
+            <p>Once a process uses up its allotted time quantum (3 units) in queue Q_i without completing its required CPU burst, its priority is reduced: it is demoted to Q_{i+1}.</p>
+        </div>
+
+        <div class="rule-card">
+            <h3>Rule 5: Completion & Metrics Locking</h3>
+            <p>When a process finishes its total required CPU burst time, it immediately transitions to the <code>TERMINATED</code> state and its Turnaround Time and Waiting Time are locked.</p>
+        </div>
+    </div>
+
+    <!-- State Transition Overview -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">🔄 PCB Lifecycle & State Transitions</div>
+        </div>
+        <div style="font-family:var(--font-mono); font-size:13px; line-height:1.8; color:#cbd5e1; background:var(--bg-surface); padding:20px; border-radius:var(--radius-md);">
+[NEW] Process Created at Random Arrival Time T
+  │
+  ▼
+[READY in Q0] Placed in Highest Priority Queue
+  │
+  ▼
+[RUNNING] Dispatched to CPU Core (Executes up to 3 units)
+  ├── Completed (Rem = 0) ─────────► [TERMINATED] (Metrics Recorded)
+  ├── Quantum Expired (3 units) ───► [READY in Q1] (Demoted)
+  └── Preempted by Q0 Arrival ────► [READY in Qi] (Re-queued at head)
+        </div>
+    </div>
+
+    <!-- Theoretical Insights -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">💡 Why UNIX MLFQ Approximates Shortest Job First (SJF)</div>
+        </div>
+        <p style="color:#cbd5e1; margin-bottom:12px;">
+            A fundamental challenge in operating system design is that the operating system cannot know beforehand how long a newly submitted process will execute.
+        </p>
+        <p style="color:var(--text-muted); line-height:1.7;">
+            MLFQ solves this problem by first assuming every job is short and interactive, granting it top priority in Q0. 
+            If the job is indeed short (CPU burst &le; 3 units), it completes immediately in Q0 with minimal waiting and turnaround time. 
+            If the job is actually a heavy batch task, it repeatedly consumes its time slices and gradually sinks into lower-priority queues (Q1 &rarr; Q2), 
+            allowing newly arriving interactive tasks to preempt it and receive prompt service.
+        </p>
+    </div>
+</div>
+
+<footer>
+    <div class="main-wrapper" style="padding:0;">
+        Operating Systems Course Simulation Project &bull; Problem #21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
+    </div>
+</footer>
+
+</body>
+</html>

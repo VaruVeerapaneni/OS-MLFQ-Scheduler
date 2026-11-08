@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparative Analysis: Fixed vs Variable Burst | UNIX MLFQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">UNIX MLFQ Scheduler</div>
+            </div>
+            <span class="brand-tag">Problem #21</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">🎮 Simulator</a></li>\n            <li><a href="comparison.html" class="nav-link active">⚖️ Comparison</a></li>\n            <li><a href="calculations.html" class="nav-link">🧮 Math & Formulas</a></li>\n            <li><a href="theory.html" class="nav-link">📘 Theory & Rules</a></li>\n            <li><a href="docs.html" class="nav-link">📖 Guide & Docs</a></li>\n        </ul>
+        <div class="nav-actions">
+            <a href="https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler" target="_blank" class="nav-gh-btn">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">⚖️ Comparative Analysis: Fixed vs. Variable Burst</h1>
+            <p class="page-subtitle">Evaluating MLFQ Round Robin Time Slicing (Q=3) under constant vs randomized CPU burst distributions</p>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="exportComparisonCSV()">📥 Export Comparison CSV</button>
+        </div>
+    </div>
+
+    <!-- Parameter Controls -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">⚙️ Matched Workload Controls</div>
+            <div style="font-size:12px; color:var(--text-muted);">Both workloads share identical arrival timestamps and process IDs</div>
+        </div>
+
+        <div class="params-grid">
+            <div class="input-box">
+                <label>Time Quantum (Q)</label>
+                <input type="number" id="cmpQuantum" value="3" min="1" max="10">
+            </div>
+            <div class="input-box">
+                <label>Simulation Time (T_sim)</label>
+                <input type="number" id="cmpSimTime" value="60" min="10" max="300">
+            </div>
+            <div class="input-box">
+                <label>Processes (N)</label>
+                <input type="number" id="cmpProcs" value="8" min="2" max="25">
+            </div>
+            <div class="input-box">
+                <label>Fixed Burst (units)</label>
+                <input type="number" id="cmpFixedBurst" value="6" min="1" max="30">
+            </div>
+            <div class="input-box">
+                <label>Min Var Burst</label>
+                <input type="number" id="cmpMinBurst" value="2" min="1" max="20">
+            </div>
+            <div class="input-box">
+                <label>Max Var Burst</label>
+                <input type="number" id="cmpMaxBurst" value="14" min="2" max="40">
+            </div>
+            <div class="input-box">
+                <label>Random Seed</label>
+                <input type="number" id="cmpSeed" value="42">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="runComparison()">▶ Re-evaluate Comparison</button>
+            <button class="btn btn-secondary" onclick="randomizeCmpSeed()">🎲 Randomize Seed</button>
+        </div>
+    </div>
+
+    <!-- Comparison Summary Matrix Table -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">📊 Side-by-Side Performance Matrix</div>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Performance Metric</th>
+                        <th>Fixed Burst Mode</th>
+                        <th>Variable (Randomized) Burst Mode</th>
+                        <th>System Scheduling Insight</th>
+                    </tr>
+                </thead>
+                <tbody id="tblCompareBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Dual Gantt Charts -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">⏱ 1. Fixed Burst Gantt Chart (Burst = <span id="lblFixedB">6</span> units each)</div>
+            <div style="font-size:12px; color:var(--text-muted);">Symmetric Round Robin execution across queues</div>
+        </div>
+        <div class="gantt-svg-wrapper" id="ganttFixed"></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">🔀 2. Variable Burst Gantt Chart (Burst in [<span id="lblMinB">2</span>, <span id="lblMaxB">14</span>])</div>
+            <div style="font-size:12px; color:var(--text-muted);">Short tasks finish rapidly in Q0; CPU-bound tasks demote down to Q2</div>
+        </div>
+        <div class="gantt-svg-wrapper" id="ganttVar"></div>
+    </div>
+
+    <!-- Side-by-Side Process Tables -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(500px, 1fr)); gap:20px;">
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">Fixed Burst Process Table</div>
+            </div>
+            <div class="table-wrapper">
+                <table id="tblFixed">
+                    <thead>
+                        <tr>
+                            <th>PID</th><th>Arr</th><th>Burst</th><th>Rem</th><th>Q</th><th>State</th><th>Finish</th><th>TAT</th><th>WT</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">Variable Burst Process Table</div>
+            </div>
+            <div class="table-wrapper">
+                <table id="tblVar">
+                    <thead>
+                        <tr>
+                            <th>PID</th><th>Arr</th><th>Burst</th><th>Rem</th><th>Q</th><th>State</th><th>Finish</th><th>TAT</th><th>WT</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="main-wrapper" style="padding:0;">
+        Operating Systems Course Simulation Project &bull; Problem #21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
+    </div>
+</footer>
+
+<script src="mlfq-engine.js"></script>
+<script>
+let lastFixedRes = null;
+let lastVarRes = null;
+
+function runComparison() {
+    const q = parseInt(document.getElementById("cmpQuantum").value) || 3;
+    const simTime = parseInt(document.getElementById("cmpSimTime").value) || 60;
+    const n = parseInt(document.getElementById("cmpProcs").value) || 8;
+    const fb = parseInt(document.getElementById("cmpFixedBurst").value) || 6;
+    const minB = parseInt(document.getElementById("cmpMinBurst").value) || 2;
+    const maxB = parseInt(document.getElementById("cmpMaxBurst").value) || 14;
+    const seed = parseInt(document.getElementById("cmpSeed").value) || 42;
+
+    document.getElementById("lblFixedB").innerText = fb;
+    document.getElementById("lblMinB").innerText = minB;
+    document.getElementById("lblMaxB").innerText = maxB;
+
+    const prng = new PRNG(seed);
+    const arrivals = [0];
+    for (let i = 1; i < n; i++) arrivals.push(prng.nextInt(0, 20));
+    arrivals.sort((a, b) => a - b);
+
+    const fWork = [];
+    const vWork = [];
+    for (let i = 0; i < n; i++) {
+        const pid = `P${i + 1}`;
+        const arr = arrivals[i];
+        fWork.push({ pid, arrival: arr, burst: fb });
+        vWork.push({ pid, arrival: arr, burst: prng.nextInt(minB, maxB) });
+    }
+
+    lastFixedRes = simulateMLFQ(fWork, q, simTime, 3);
+    lastVarRes = simulateMLFQ(vWork, q, simTime, 3);
+
+    // Matrix
+    const tbody = document.getElementById("tblCompareBody");
+    tbody.innerHTML = `
+        <tr><td><strong>Completed Processes</strong></td><td><strong style="color:#ffffff;">${lastFixedRes.doneCount} / ${lastFixedRes.total}</strong></td><td><strong style="color:#ffffff;">${lastVarRes.doneCount} / ${lastVarRes.total}</strong></td><td>Fixed mode provides predictable completion for identical jobs; Variable mode isolates short tasks first.</td></tr>
+        <tr><td><strong>Average Waiting Time (AWT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.awt} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.awt} units</strong></td><td>Short jobs in Variable mode finish with near-zero queue latency in Q0.</td></tr>
+        <tr><td><strong>Average Turnaround Time (ATT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.att} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.att} units</strong></td><td>MLFQ yields lower turnaround times for interactive workloads by approximating SJF.</td></tr>
+        <tr><td><strong>Average Response Time (ART)</strong></td><td>${lastFixedRes.art} units</td><td>${lastVarRes.art} units</td><td>Rapid CPU touch for all newly arriving tasks placed at Q0.</td></tr>
+        <tr><td><strong>CPU Core Utilization</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.cpu}%</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.cpu}%</strong></td><td>Continuous computation keeps core utilized near 100%.</td></tr>
+        <tr><td><strong>System Throughput</strong></td><td>${lastFixedRes.tp} proc/unit</td><td>${lastVarRes.tp} proc/unit</td><td>Completed processes per simulation horizon unit.</td></tr>
+        <tr><td><strong>Time Quantum Bound</strong></td><td>${q} units</td><td>${q} units</td><td>Strict Round Robin time slicing bound enforced across queues.</td></tr>
+    `;
+
+    // Gantts
+    document.getElementById("ganttFixed").innerHTML = renderGanttSVG(lastFixedRes.gantt, simTime);
+    document.getElementById("ganttVar").innerHTML = renderGanttSVG(lastVarRes.gantt, simTime);
+
+    // Tables
+    renderCmpTable("tblFixed", lastFixedRes.procs);
+    renderCmpTable("tblVar", lastVarRes.procs);
+}
+
+function renderCmpTable(tableId, procs) {
+    const tbody = document.querySelector(`#${tableId} tbody`);
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    procs.forEach(p => {
+        const isDone = p.remaining === 0;
+        const badgeCls = isDone ? "status-term" : "status-ready";
+        tbody.innerHTML += `<tr>
+            <td style="font-weight:700; color:#fff;">${p.pid}</td>
+            <td>${p.arrival}</td>
+            <td>${p.burst}</td>
+            <td>${p.remaining}</td>
+            <td>Q${p.queue}</td>
+            <td><span class="status-badge ${badgeCls}">${isDone ? 'TERM' : 'READY'}</span></td>
+            <td>${p.completionTime !== null ? p.completionTime : '-'}</td>
+            <td style="color:var(--cyan); font-weight:700;">${p.tat !== null ? p.tat : '-'}</td>
+            <td style="color:var(--emerald); font-weight:700;">${p.wt}</td>
+        </tr>`;
+    });
+}
+
+function randomizeCmpSeed() {
+    document.getElementById("cmpSeed").value = Math.floor(Math.random() * 9999) + 1;
+    runComparison();
+}
+
+function exportComparisonCSV() {
+    if (!lastFixedRes || !lastVarRes) return;
+    let csv = "MODE,PID,Arrival,Burst,Remaining,Queue,State,Completion,TAT,WT,RT\n";
+    lastFixedRes.procs.forEach(p => {
+        csv += `FIXED,${p.pid},${p.arrival},${p.burst},${p.remaining},Q${p.queue},${p.state},${p.completionTime !== null ? p.completionTime : "N/A"},${p.tat !== null ? p.tat : "N/A"},${p.wt},${p.rt !== null ? p.rt : "N/A"}\n`;
+    });
+    lastVarRes.procs.forEach(p => {
+        csv += `VARIABLE,${p.pid},${p.arrival},${p.burst},${p.remaining},Q${p.queue},${p.state},${p.completionTime !== null ? p.completionTime : "N/A"},${p.tat !== null ? p.tat : "N/A"},${p.wt},${p.rt !== null ? p.rt : "N/A"}\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "mlfq_comparison_metrics.csv";
+    link.click();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    runComparison();
+});
+</script>
+</body>
+</html>

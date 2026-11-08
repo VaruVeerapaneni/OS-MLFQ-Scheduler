@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Documentation & User Guide | UNIX MLFQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">UNIX MLFQ Scheduler</div>
+            </div>
+            <span class="brand-tag">Problem #21</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">🎮 Simulator</a></li>\n            <li><a href="comparison.html" class="nav-link">⚖️ Comparison</a></li>\n            <li><a href="calculations.html" class="nav-link">🧮 Math & Formulas</a></li>\n            <li><a href="theory.html" class="nav-link">📘 Theory & Rules</a></li>\n            <li><a href="docs.html" class="nav-link active">📖 Guide & Docs</a></li>\n        </ul>
+        <div class="nav-actions">
+            <a href="https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler" target="_blank" class="nav-gh-btn">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">📖 System Guide & Terminal Instructions</h1>
+            <p class="page-subtitle">User manual for running the Interactive Web App, Terminal CLI, Desktop GUI, and Test Suite</p>
+        </div>
+    </div>
+
+    <!-- Quick Start Commands -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">🚀 Quick Start Commands</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="rule-card">
+                <h3>1. Interactive Terminal CLI</h3>
+                <p>Launches the formatted command-line interface with ASCII Gantt charts and statistical tables:</p>
+                <div style="background:#090d16; padding:10px 14px; border-radius:6px; margin-top:8px; font-family:var(--font-mono); color:var(--cyan);">
+                    python cli.py
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <h3>2. Automated Comparative Simulation (CLI Mode)</h3>
+                <p>Runs a head-to-head comparison between fixed burst and variable burst workloads:</p>
+                <div style="background:#090d16; padding:10px 14px; border-radius:6px; margin-top:8px; font-family:var(--font-mono); color:var(--cyan);">
+                    python cli.py --compare --sim-time 60 --processes 8
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <h3>3. Tkinter Desktop GUI</h3>
+                <p>Launches the standalone visual desktop application with Canvas Gantt charts and side-by-side metric visualizer:</p>
+                <div style="background:#090d16; padding:10px 14px; border-radius:6px; margin-top:8px; font-family:var(--font-mono); color:var(--cyan);">
+                    python gui.py
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <h3>4. Automated Unit Test Suite</h3>
+                <p>Runs full test coverage verifying quantum slicing, priority demotion, Round Robin ordering, and horizon cutoffs:</p>
+                <div style="background:#090d16; padding:10px 14px; border-radius:6px; margin-top:8px; font-family:var(--font-mono); color:var(--cyan);">
+                    python -m unittest test_mlfq.py -v
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <h3>5. Local HTTP Web Server</h3>
+                <p>Serves the multi-page web application locally on port 8080:</p>
+                <div style="background:#090d16; padding:10px 14px; border-radius:6px; margin-top:8px; font-family:var(--font-mono); color:var(--cyan);">
+                    python -m http.server 8080
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Package Architecture -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">📁 Project File Architecture</div>
+        </div>
+        <div style="font-family:var(--font-mono); font-size:13px; line-height:1.8; color:#cbd5e1; background:var(--bg-surface); padding:20px; border-radius:var(--radius-md);">
+os_mlfq_simulator/
+├── mlfq/
+│   ├── __init__.py           # Package declarations
+│   ├── pcb.py                # Process Control Block & ProcessState definitions
+│   ├── scheduler.py          # MLFQ Scheduler with Round Robin (Q=3) & demotion
+│   ├── generator.py          # Random arrival & matched workload generators
+│   └── metrics.py            # AWT, ATT, CPU utilization & ASCII Gantt chart
+├── index.html                # Page 1: Live Interactive Simulator & Animation
+├── comparison.html           # Page 2: Comparative Analysis (Fixed vs Variable)
+├── calculations.html         # Page 3: Step-by-Step Math & Formula Derivations
+├── theory.html               # Page 4: Operating Systems MLFQ Principles
+├── docs.html                 # Page 5: System Guide & Terminal Instructions
+├── style.css                 # Unified modern dark stylesheet
+├── mlfq-engine.js            # Standalone client-side MLFQ simulation engine
+├── cli.py                    # Terminal interface with formatted tables
+├── gui.py                    # Interactive Desktop GUI (Tkinter Canvas)
+├── run_simulation.py         # Unified application launcher
+├── test_mlfq.py              # Comprehensive unit test suite
+├── README.md                 # Project README with documentation
+└── PROJECT_REPORT.md         # Formal academic report
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="main-wrapper" style="padding:0;">
+        Operating Systems Course Simulation Project &bull; Problem #21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
+    </div>
+</footer>
+
+</body>
+</html>

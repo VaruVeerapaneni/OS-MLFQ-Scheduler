@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematical Derivations & Formulas | UNIX MLFQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-brand">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div class="brand-title">UNIX MLFQ Scheduler</div>
+            </div>
+            <span class="brand-tag">Problem #21</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link">🎮 Simulator</a></li>\n            <li><a href="comparison.html" class="nav-link">⚖️ Comparison</a></li>\n            <li><a href="calculations.html" class="nav-link active">🧮 Math & Formulas</a></li>\n            <li><a href="theory.html" class="nav-link">📘 Theory & Rules</a></li>\n            <li><a href="docs.html" class="nav-link">📖 Guide & Docs</a></li>\n        </ul>
+        <div class="nav-actions">
+            <a href="https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler" target="_blank" class="nav-gh-btn">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">🧮 Mathematical Formulas & Arithmetic Derivations</h1>
+            <p class="page-subtitle">Formal operating systems metrics, equations, and live step-by-step substitution calculations</p>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="recalcMath()">🔄 Re-Calculate Live Data</button>
+        </div>
+    </div>
+
+    <!-- Formal Mathematical Definitions Grid -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(380px, 1fr)); gap:20px; margin-bottom:24px;">
+        <div class="rule-card">
+            <h3>1. Turnaround Time (TAT)</h3>
+            <p>Total time elapsed from process arrival to complete termination:</p>
+            <div style="margin-top:10px; font-family:var(--font-mono); color:var(--cyan); font-weight:700;">
+                TAT = Completion Time - Arrival Time
+            </div>
+            <p style="margin-top:8px; font-size:12px; color:var(--text-dim);">Represents the total lifespan of the process within the system.</p>
+        </div>
+
+        <div class="rule-card">
+            <h3>2. Waiting Time (WT)</h3>
+            <p>Total time spent sitting in ready queues waiting for CPU allocation:</p>
+            <div style="margin-top:10px; font-family:var(--font-mono); color:var(--emerald); font-weight:700;">
+                WT = Turnaround Time - Burst Time
+            </div>
+            <p style="margin-top:8px; font-size:12px; color:var(--text-dim);">For in-flight processes: WT = (T_sim - T_arr) - (Burst - Remaining).</p>
+        </div>
+
+        <div class="rule-card">
+            <h3>3. Average Waiting Time (AWT)</h3>
+            <p>Arithmetic mean of waiting times across all completed processes:</p>
+            <div style="margin-top:10px; font-family:var(--font-mono); color:var(--primary); font-weight:700;">
+                AWT = (Sum of WT_i) / N_completed
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h3>4. Average Turnaround Time (ATT)</h3>
+            <p>Arithmetic mean of turnaround times across all completed processes:</p>
+            <div style="margin-top:10px; font-family:var(--font-mono); color:var(--amber); font-weight:700;">
+                ATT = (Sum of TAT_i) / N_completed
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h3>5. CPU Utilization (%)</h3>
+            <p>Percentage of time the CPU was actively executing user workloads:</p>
+            <div style="margin-top:10px; font-family:var(--font-mono); color:var(--cyan); font-weight:700;">
+                CPU Utilization = (Total Busy Time / Simulation Time) &times; 100%
+            </div>
+        </div>
+
+        <div class="rule-card">
+            <h3>6. System Throughput</h3>
+            <p>Rate of successfully completed tasks per unit of simulation horizon:</p>
+            <div style="margin-top:10px; font-family:var(--font-mono); color:var(--purple); font-weight:700;">
+                Throughput = N_completed / Simulation Time  [processes/unit]
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Step-by-Step Derivation Box -->
+    <div class="panel">
+        <div class="panel-header">
+            <div class="panel-title">📝 Live Step-by-Step Process Arithmetic Derivations</div>
+            <div style="font-size:12px; color:var(--text-muted);">Exact numbers and arithmetic substitutions generated from the active simulation run</div>
+        </div>
+        <div class="math-card" id="mathInspectorBox">Computing arithmetic derivations...</div>
+    </div>
+</div>
+
+<footer>
+    <div class="main-wrapper" style="padding:0;">
+        Operating Systems Course Simulation Project &bull; Problem #21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
+    </div>
+</footer>
+
+<script src="mlfq-engine.js"></script>
+<script>
+function recalcMath() {
+    const arrivals = [0, 0, 3, 4, 7, 7, 8, 20];
+    const bursts = [13, 3, 12, 13, 10, 3, 11, 8];
+    const workload = [];
+    for (let i = 0; i < arrivals.length; i++) {
+        workload.push({ pid: `P${i + 1}`, arrival: arrivals[i], burst: bursts[i] });
+    }
+
+    const res = simulateMLFQ(workload, 3, 60, 3);
+    const box = document.getElementById("mathInspectorBox");
+    if (!box) return;
+
+    const lines = [
+        "===========================================================================",
+        " STEP-BY-STEP NUMERICAL CALCULATIONS FOR COMPLETED PROCESSES",
+        "===========================================================================",
+        ""
+    ];
+
+    if (res.completed.length === 0) {
+        lines.push("No processes completed execution within the current simulation horizon.");
+    } else {
+        res.completed.forEach((p, idx) => {
+            lines.push(`▶ PROCESS [${p.pid}]`);
+            lines.push(`   - Arrival Time       (T_arr)  = ${p.arrival}`);
+            lines.push(`   - CPU Burst Time     (Burst)  = ${p.burst}`);
+            lines.push(`   - Completion Time    (T_comp) = ${p.completionTime}`);
+            lines.push(`   - Turnaround Time    (TAT)    = T_comp (${p.completionTime}) - T_arr (${p.arrival}) = ${p.tat} units`);
+            lines.push(`   - Waiting Time       (WT)     = TAT (${p.tat}) - Burst (${p.burst}) = ${p.wt} units`);
+            if (p.rt !== null) lines.push(`   - Response Time      (RT)     = T_start (${p.startTime}) - T_arr (${p.arrival}) = ${p.rt} units`);
+            lines.push("");
+        });
+
+        lines.push("---------------------------------------------------------------------------");
+        lines.push(" AGGREGATE STATISTICAL DERIVATIONS:");
+        lines.push("---------------------------------------------------------------------------");
+        const wtSum = res.completed.map(p => p.wt).join(" + ");
+        lines.push(`1. Average Waiting Time (AWT):`);
+        lines.push(`   AWT = (${wtSum}) / ${res.completed.length}`);
+        lines.push(`   AWT = ${res.awt} units`);
+        lines.push("");
+
+        const tatSum = res.completed.map(p => p.tat).join(" + ");
+        lines.push(`2. Average Turnaround Time (ATT):`);
+        lines.push(`   ATT = (${tatSum}) / ${res.completed.length}`);
+        lines.push(`   ATT = ${res.att} units`);
+        lines.push("");
+
+        lines.push(`3. Completed Count: ${res.doneCount} of ${res.total} processes`);
+        lines.push(`4. CPU Core Utilization: ${res.cpu}%`);
+        lines.push(`5. Throughput Rate: ${res.tp} processes/time unit`);
+    }
+
+    box.innerText = lines.join("\n");
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    recalcMath();
+});
+</script>
+</body>
+</html>
