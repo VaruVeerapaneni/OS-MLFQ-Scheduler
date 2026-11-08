@@ -1030,13 +1030,29 @@
     </div>
 </div>
 
+
+<script src="app.js"></script>
 <script>
+// Inline fallback
+// Pseudo-Random Number Generator for reproducible testing
 class PRNG {
-    constructor(seed) { this.m = 0x80000000; this.a = 1103515245; this.c = 12345; this.state = seed ? seed : Math.floor(Math.random() * (this.m - 1)); }
-    nextInt(min, max) { this.state = (this.a * this.state + this.c) % this.m; return min + Math.floor((this.state / this.m) * (max - min + 1)); }
+    constructor(seed) { 
+        this.m = 0x80000000; 
+        this.a = 1103515245; 
+        this.c = 12345; 
+        this.state = seed ? seed : Math.floor(Math.random() * (this.m - 1)); 
+    }
+    nextInt(min, max) { 
+        this.state = (this.a * this.state + this.c) % this.m; 
+        return min + Math.floor((this.state / this.m) * (max - min + 1)); 
+    }
 }
 
-const PID_PALETTE = ["#6366f1", "#06b6d4", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6", "#f43f5e", "#eab308", "#3b82f6", "#84cc16", "#a855f7"];
+const PID_PALETTE = [
+    "#6366f1", "#06b6d4", "#10b981", "#f59e0b", 
+    "#ec4899", "#8b5cf6", "#14b8a6", "#f43f5e", 
+    "#eab308", "#3b82f6", "#84cc16", "#a855f7"
+];
 
 let globalCustomProcs = [];
 let animInterval = null;
@@ -1220,7 +1236,10 @@ function renderGantt(segments, maxTime) {
 }
 
 function renderTable(tableId, procs) {
-    const tbody = document.querySelector(`#${tableId} tbody`);
+    const tableEl = document.getElementById(tableId);
+    if (!tableEl) return;
+    const tbody = tableEl.querySelector("tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
     procs.forEach(p => {
         const isDone = p.remaining === 0;
@@ -1244,15 +1263,16 @@ function renderTable(tableId, procs) {
 function runInstantSimulator() {
     stopAnimation();
 
-    const q = parseInt(document.getElementById("inpQuantum").value) || 3;
-    const simTime = parseInt(document.getElementById("inpSimTime").value) || 60;
-    const n = parseInt(document.getElementById("inpProcs").value) || 8;
-    const fixedBurst = parseInt(document.getElementById("inpFixedBurst").value) || 6;
-    const minBurst = parseInt(document.getElementById("inpMinBurst").value) || 2;
-    const maxBurst = parseInt(document.getElementById("inpMaxBurst").value) || 14;
-    const seed = parseInt(document.getElementById("inpSeed").value) || 42;
+    const q = parseInt(document.getElementById("inpQuantum")?.value) || 3;
+    const simTime = parseInt(document.getElementById("inpSimTime")?.value) || 60;
+    const n = parseInt(document.getElementById("inpProcs")?.value) || 8;
+    const fixedBurst = parseInt(document.getElementById("inpFixedBurst")?.value) || 6;
+    const minBurst = parseInt(document.getElementById("inpMinBurst")?.value) || 2;
+    const maxBurst = parseInt(document.getElementById("inpMaxBurst")?.value) || 14;
+    const seed = parseInt(document.getElementById("inpSeed")?.value) || 42;
 
-    document.getElementById("lblFixedB").innerText = fixedBurst;
+    const lblB = document.getElementById("lblFixedB");
+    if (lblB) lblB.innerText = fixedBurst;
 
     const prng = new PRNG(seed);
     const arrivals = [0];
@@ -1279,20 +1299,23 @@ function runInstantSimulator() {
     latestVarRes = simulateMLFQEngine(varWorkload, q, simTime, 3);
 
     // Update KPI Tiles
-    document.getElementById("valFixedAWT").innerText = `${latestFixedRes.awt}u`;
-    document.getElementById("valVarAWT").innerText = `${latestVarRes.awt}u`;
-    document.getElementById("valFixedATT").innerText = `${latestFixedRes.att}u`;
-    document.getElementById("valVarATT").innerText = `${latestVarRes.att}u`;
-    document.getElementById("valFixedDone").innerText = `${latestFixedRes.doneCount} / ${latestFixedRes.total}`;
-    document.getElementById("valVarDone").innerText = `${latestVarRes.doneCount} / ${latestVarRes.total}`;
-    document.getElementById("valFixedCPU").innerText = `${latestFixedRes.cpu}%`;
-    document.getElementById("valVarCPU").innerText = `${latestVarRes.cpu}%`;
-    document.getElementById("valFixedTP").innerText = latestFixedRes.tp;
-    document.getElementById("valVarTP").innerText = latestVarRes.tp;
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+    setTxt("valFixedAWT", `${latestFixedRes.awt}u`);
+    setTxt("valVarAWT", `${latestVarRes.awt}u`);
+    setTxt("valFixedATT", `${latestFixedRes.att}u`);
+    setTxt("valVarATT", `${latestVarRes.att}u`);
+    setTxt("valFixedDone", `${latestFixedRes.doneCount} / ${latestFixedRes.total}`);
+    setTxt("valVarDone", `${latestVarRes.doneCount} / ${latestVarRes.total}`);
+    setTxt("valFixedCPU", `${latestFixedRes.cpu}%`);
+    setTxt("valVarCPU", `${latestVarRes.cpu}%`);
+    setTxt("valFixedTP", latestFixedRes.tp);
+    setTxt("valVarTP", latestVarRes.tp);
 
     // Render Gantt Charts
-    document.getElementById("ganttFixedBox").innerHTML = renderGantt(latestFixedRes.gantt, simTime);
-    document.getElementById("ganttVarBox").innerHTML = renderGantt(latestVarRes.gantt, simTime);
+    const gFixBox = document.getElementById("ganttFixedBox");
+    if (gFixBox) gFixBox.innerHTML = renderGantt(latestFixedRes.gantt, simTime);
+    const gVarBox = document.getElementById("ganttVarBox");
+    if (gVarBox) gVarBox.innerHTML = renderGantt(latestVarRes.gantt, simTime);
 
     // Render Tables
     renderTable("tblFixed", latestFixedRes.procs);
@@ -1307,15 +1330,16 @@ function runInstantSimulator() {
     // Render Math derivations
     renderMathInspector(latestVarRes);
 
-    document.getElementById("clockDisplay").innerText = simTime;
-    document.getElementById("cpuActiveProc").innerText = "Execution Concluded (T=" + simTime + ")";
-    document.getElementById("quantumLeftDisplay").innerText = "0";
+    setTxt("clockDisplay", simTime);
+    setTxt("cpuActiveProc", "Execution Concluded (T=" + simTime + ")");
+    setTxt("quantumLeftDisplay", "0");
 }
 
 function renderLiveQueues(procs) {
     const q0 = document.getElementById("slotQ0");
     const q1 = document.getElementById("slotQ1");
     const q2 = document.getElementById("slotQ2");
+    if (!q0 || !q1 || !q2) return;
 
     q0.innerHTML = ""; q1.innerHTML = ""; q2.innerHTML = "";
 
@@ -1335,6 +1359,7 @@ function renderLiveQueues(procs) {
 
 function renderComparisonMatrix(f, v, simTime, q) {
     const tbody = document.getElementById("tblCompareBody");
+    if (!tbody) return;
     tbody.innerHTML = `
         <tr><td>Completed Workload</td><td><strong>${f.doneCount} / ${f.total}</strong></td><td><strong>${v.doneCount} / ${v.total}</strong></td><td>Fixed burst enables uniform completion; Variable isolates short jobs first.</td></tr>
         <tr><td>Average Waiting Time (AWT)</td><td><strong style="color:var(--cyan);">${f.awt} units</strong></td><td><strong style="color:var(--emerald);">${v.awt} units</strong></td><td>Short jobs in Variable mode complete with near-zero queue wait in Q0.</td></tr>
@@ -1348,30 +1373,29 @@ function renderComparisonMatrix(f, v, simTime, q) {
 
 function renderMathInspector(res) {
     const box = document.getElementById("processMathInspector");
+    if (!box) return;
     const completedSample = res.completed.slice(0, 4);
     if (completedSample.length === 0) {
         box.innerHTML = "No completed processes in current horizon. Increase simulation time limit to observe completions.";
         return;
     }
 
-    let out = "Step-by-Step Numerical Calculations for Completed Workload:
-";
+    const lines = [
+        "Step-by-Step Numerical Calculations for Completed Workload:",
+        ""
+    ];
     completedSample.forEach(p => {
-        out += `▶ [${p.pid}] Arrival=${p.arrival}, Burst=${p.burst}, Completion=${p.completionTime}
-`;
-        out += `   TAT = Completion (${p.completionTime}) - Arrival (${p.arrival}) = ${p.tat} units
-`;
-        out += `   WT  = TAT (${p.tat}) - Burst (${p.burst}) = ${p.wt} units
-
-`;
+        lines.push(`▶ [${p.pid}] Arrival=${p.arrival}, Burst=${p.burst}, Completion=${p.completionTime}`);
+        lines.push(`   TAT = Completion (${p.completionTime}) - Arrival (${p.arrival}) = ${p.tat} units`);
+        lines.push(`   WT  = TAT (${p.tat}) - Burst (${p.burst}) = ${p.wt} units`);
+        lines.push("");
     });
-    out += `AWT Calculation: (${res.completed.map(p => p.wt).join(' + ')}) / ${res.completed.length} = ${res.awt} units
-`;
-    out += `ATT Calculation: (${res.completed.map(p => p.tat).join(' + ')}) / ${res.completed.length} = ${res.att} units`;
-    box.innerText = out;
+    lines.push(`AWT Calculation: (${res.completed.map(p => p.wt).join(' + ')}) / ${res.completed.length} = ${res.awt} units`);
+    lines.push(`ATT Calculation: (${res.completed.map(p => p.tat).join(' + ')}) / ${res.completed.length} = ${res.att} units`);
+
+    box.innerText = lines.join("\\n");
 }
 
-// Step & Animation
 function togglePlayAnimation() {
     if (isAnimating) {
         stopAnimation();
@@ -1385,10 +1409,11 @@ function startAnimation() {
     if (!latestVarRes || !latestVarRes.ticksHistory.length) return;
 
     isAnimating = true;
-    document.getElementById("btnPlayPause").innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Pause`;
+    const btn = document.getElementById("btnPlayPause");
+    if (btn) btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Pause`;
     animCurrentTick = 0;
 
-    const speed = parseInt(document.getElementById("animSpeed").value) || 300;
+    const speed = parseInt(document.getElementById("animSpeed")?.value) || 300;
     animInterval = setInterval(() => {
         if (animCurrentTick >= latestVarRes.ticksHistory.length) {
             stopAnimation();
@@ -1402,12 +1427,13 @@ function startAnimation() {
 function stopAnimation() {
     isAnimating = false;
     if (animInterval) clearInterval(animInterval);
-    document.getElementById("btnPlayPause").innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Play Step Animation`;
+    const btn = document.getElementById("btnPlayPause");
+    if (btn) btn.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Play Step Animation`;
 }
 
 function stepForwardOneTick() {
     if (!latestVarRes) runInstantSimulator();
-    if (animCurrentTick < latestVarRes.ticksHistory.length) {
+    if (latestVarRes && animCurrentTick < latestVarRes.ticksHistory.length) {
         applyTick(animCurrentTick);
         animCurrentTick++;
     }
@@ -1415,78 +1441,97 @@ function stepForwardOneTick() {
 
 function applyTick(tickIdx) {
     const snap = latestVarRes.ticksHistory[tickIdx];
-    document.getElementById("clockDisplay").innerText = snap.t;
-    document.getElementById("cpuActiveProc").innerText = snap.runningPid;
-    document.getElementById("quantumLeftDisplay").innerText = snap.sliceLeft;
+    const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+    setTxt("clockDisplay", snap.t);
+    setTxt("cpuActiveProc", snap.runningPid);
+    setTxt("quantumLeftDisplay", snap.sliceLeft);
 
     const q0 = document.getElementById("slotQ0");
     const q1 = document.getElementById("slotQ1");
     const q2 = document.getElementById("slotQ2");
 
-    q0.innerHTML = snap.q0.length ? snap.q0.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
-    q1.innerHTML = snap.q1.length ? snap.q1.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
-    q2.innerHTML = snap.q2.length ? snap.q2.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
+    if (q0) q0.innerHTML = snap.q0.length ? snap.q0.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
+    if (q1) q1.innerHTML = snap.q1.length ? snap.q1.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
+    if (q2) q2.innerHTML = snap.q2.length ? snap.q2.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
 }
 
 function applyPreset() {
-    const val = document.getElementById("presetSelect").value;
+    const val = document.getElementById("presetSelect")?.value;
+    const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
     if (val === "standard") {
-        document.getElementById("inpQuantum").value = 3;
-        document.getElementById("inpSimTime").value = 60;
-        document.getElementById("inpProcs").value = 8;
-        document.getElementById("inpFixedBurst").value = 6;
-        document.getElementById("inpMinBurst").value = 2;
-        document.getElementById("inpMaxBurst").value = 14;
+        setV("inpQuantum", 3);
+        setV("inpSimTime", 60);
+        setV("inpProcs", 8);
+        setV("inpFixedBurst", 6);
+        setV("inpMinBurst", 2);
+        setV("inpMaxBurst", 14);
     } else if (val === "interactive_short") {
-        document.getElementById("inpQuantum").value = 3;
-        document.getElementById("inpSimTime").value = 50;
-        document.getElementById("inpProcs").value = 6;
-        document.getElementById("inpFixedBurst").value = 3;
-        document.getElementById("inpMinBurst").value = 1;
-        document.getElementById("inpMaxBurst").value = 4;
+        setV("inpQuantum", 3);
+        setV("inpSimTime", 50);
+        setV("inpProcs", 6);
+        setV("inpFixedBurst", 3);
+        setV("inpMinBurst", 1);
+        setV("inpMaxBurst", 4);
     } else if (val === "heavy_cpu") {
-        document.getElementById("inpQuantum").value = 3;
-        document.getElementById("inpSimTime").value = 80;
-        document.getElementById("inpProcs").value = 6;
-        document.getElementById("inpFixedBurst").value = 15;
-        document.getElementById("inpMinBurst").value = 10;
-        document.getElementById("inpMaxBurst").value = 25;
+        setV("inpQuantum", 3);
+        setV("inpSimTime", 80);
+        setV("inpProcs", 6);
+        setV("inpFixedBurst", 15);
+        setV("inpMinBurst", 10);
+        setV("inpMaxBurst", 25);
     } else if (val === "preemption") {
-        document.getElementById("inpQuantum").value = 3;
-        document.getElementById("inpSimTime").value = 45;
-        document.getElementById("inpProcs").value = 5;
-        document.getElementById("inpFixedBurst").value = 7;
-        document.getElementById("inpMinBurst").value = 2;
-        document.getElementById("inpMaxBurst").value = 12;
+        setV("inpQuantum", 3);
+        setV("inpSimTime", 45);
+        setV("inpProcs", 5);
+        setV("inpFixedBurst", 7);
+        setV("inpMinBurst", 2);
+        setV("inpMaxBurst", 12);
     }
     runInstantSimulator();
 }
 
 function randomizeSeed() {
-    document.getElementById("inpSeed").value = Math.floor(Math.random() * 9999) + 1;
+    const seedInput = document.getElementById("inpSeed");
+    if (seedInput) {
+        seedInput.value = Math.floor(Math.random() * 9999) + 1;
+    }
     runInstantSimulator();
 }
 
 function switchMainTab(tabId) {
     document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
     document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-    document.getElementById(tabId).style.display = "block";
-    event.currentTarget.classList.add("active");
+    const activePanel = document.getElementById(tabId);
+    if (activePanel) activePanel.style.display = "block";
+    if (window.event && window.event.currentTarget) {
+        window.event.currentTarget.classList.add("active");
+    }
 }
 
-function openAddProcessModal() { document.getElementById("addProcModal").style.display = "flex"; }
-function closeAddProcessModal() { document.getElementById("addProcModal").style.display = "none"; }
+function openAddProcessModal() { 
+    const el = document.getElementById("addProcModal"); 
+    if (el) el.style.display = "flex"; 
+}
+
+function closeAddProcessModal() { 
+    const el = document.getElementById("addProcModal"); 
+    if (el) el.style.display = "none"; 
+}
+
 function submitCustomProcess() {
-    const pid = document.getElementById("custPid").value.trim() || "P_USER";
-    const arr = parseInt(document.getElementById("custArr").value) || 0;
-    const burst = parseInt(document.getElementById("custBurst").value) || 6;
+    const pid = document.getElementById("custPid")?.value.trim() || "P_USER";
+    const arr = parseInt(document.getElementById("custArr")?.value) || 0;
+    const burst = parseInt(document.getElementById("custBurst")?.value) || 6;
     globalCustomProcs.push({ pid, arrival: arr, burst });
     closeAddProcessModal();
     runInstantSimulator();
 }
 
-window.onload = runInstantSimulator;
-</script>
+// Auto-run on page load
+window.addEventListener("DOMContentLoaded", () => {
+    runInstantSimulator();
+});
 
+</script>
 </body>
 </html>
