@@ -1,0 +1,33 @@
+name: MLFQ Scheduler Simulation & Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  run-simulation:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Run Automated Unit Tests
+      run: |
+        python -m unittest test_mlfq.py -v
+
+    - name: Run Head-to-Head Comparative Simulation
+      run: |
+        python cli.py --compare --sim-time 50 --processes 8
+
+    - name: Generate Web Dashboard Report
+      run: |
+        python -c "import web_dashboard; web_dashboard.generate_html_report()"
