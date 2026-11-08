@@ -1,16 +1,22 @@
-name: MLFQ Scheduler Simulation & Tests
+name: MLFQ Scheduler Simulation & GitHub Pages Deploy
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   run-simulation:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -28,29 +34,31 @@ jobs:
       run: |
         python cli.py --compare --sim-time 50 --processes 8
 
-    - name: Generate Web Dashboard Report
-      run: |
-        python -c "import web_dashboard; web_dashboard.generate_html_report()"
-
-    - name: Publish Summary to GitHub Actions Summary
-      run: |
-        cat << 'EOF' >> $GITHUB_STEP_SUMMARY
-        # 🎓 OS Group Project 7: MLFQ Simulation Results
-        **Course:** Operating Systems | **Problem:** #21
-        
-        ### 👥 Team Members
-        - **AP24110010509** — VEERAPANENI VARALAKSHMI
-        - **AP24110010538** — GANDHAM SAI POOJITHA
-        - **AP24110012001** — KANDIMALLA KEERTHI SREE
-        - **AP24110011723** — ARADHYA SINGH
-        
-        ---
-        ### 📊 Performance Summary
-        All unit tests and comparative simulations passed successfully! Expand the job logs above to view detailed execution traces and ASCII Gantt charts.
-        EOF
-
-    - name: Upload HTML Report Artifact
+    - name: Upload Simulation Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: simulation-report-html
-        path: simulation_results.html
+        name: simulation-files
+        path: |
+          index.html
+          app.js
+          simulation_results.html
+          PROJECT_REPORT.md
+
+  deploy-pages:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: run-simulation
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
