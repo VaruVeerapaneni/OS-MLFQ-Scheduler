@@ -116,14 +116,25 @@ os_mlfq_simulator/
 2. **Process Arrival:**
    - Processes arrive at random times $t$ and immediately enter $Q_0$.
 3. **Execution & Demotion:**
-   - CPU always schedules from the highest-priority non-empty queue ($Q_0 	o Q_1 	o Q_2$).
+   - CPU always schedules from the highest-priority non-empty queue ($Q_0 \to Q_1 \to Q_2$).
    - A process executes for up to 3 units.
    - If it completes, it enters `TERMINATED` state and records completion time.
    - If it consumes the full 3 units without completing, it is preempted and **demoted** to $Q_{i+1}$.
 4. **Simulation Termination:**
-   - Simulation stops at $t = T_{sim}$.
+   - Simulation stops at $t = T_{\text{sim}}$.
    - Metrics are computed for all completed processes:
-     $$	ext{TAT} = 	ext{Completion Time} - 	ext{Arrival Time}$$
-     $$	ext{WT} = 	ext{TAT} - 	ext{Burst Time}$$
-     $$	ext{AWT} = rac{1}{N_{completed}} \sum 	ext{WT}$$
-     $$	ext{ATT} = rac{1}{N_{completed}} \sum 	ext{TAT}$$
+
+```text
+Turnaround Time (TAT) = Completion Time - Arrival Time
+Waiting Time (WT)    = Turnaround Time - Burst Time
+Average Waiting Time = (Sum of WT) / Number of Completed Processes
+Average Turnaround   = (Sum of TAT) / Number of Completed Processes
+```
+
+$$\text{TAT} = \text{Completion Time} - \text{Arrival Time}$$
+
+$$\text{WT} = \text{TAT} - \text{Burst Time}$$
+
+$$\text{AWT} = \frac{1}{N_{\text{completed}}} \sum_{i=1}^{N_{\text{completed}}} \text{WT}_i$$
+
+$$\text{ATT} = \frac{1}{N_{\text{completed}}} \sum_{i=1}^{N_{\text{completed}}} \text{TAT}_i$$

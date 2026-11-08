@@ -54,10 +54,10 @@ In classic UNIX operating systems (such as System V and 4.3BSD), process priorit
 
 ### 3.2 Core Scheduling Rules
 The MLFQ simulator enforces the following principles:
-- **Rule 1 (Priority Selection):** If $	ext{Priority}(A) > 	ext{Priority}(B)$, process $A$ executes ($A$ is in a higher-priority queue than $B$).
-- **Rule 2 (Round Robin within Queue):** If $	ext{Priority}(A) = 	ext{Priority}(B)$, processes $A$ and $B$ share the CPU in Round Robin fashion using a time slice of 3 units.
+- **Rule 1 (Priority Selection):** If $\text{Priority}(A) > \text{Priority}(B)$, process $A$ executes ($A$ is in a higher-priority queue than $B$).
+- **Rule 2 (Round Robin within Queue):** If $\text{Priority}(A) = \text{Priority}(B)$, processes $A$ and $B$ share the CPU in Round Robin fashion using a time slice of 3 units.
 - **Rule 3 (New Arrival Priority):** When a new process arrives in the system, it is placed at the highest priority queue ($Q_0$).
-- **Rule 4 (Feedback Demotion):** If a process utilizes its entire time quantum (3 units) without completing, its priority is degraded: it is preempted and demoted to the next lower queue ($Q_{i} 	o Q_{i+1}$).
+- **Rule 4 (Feedback Demotion):** If a process utilizes its entire time quantum (3 units) without completing, its priority is degraded: it is preempted and demoted to the next lower queue ($Q_{i} \to Q_{i+1}$).
 - **Rule 5 (Completion):** Once a process expends its entire burst time, it transitions to `TERMINATED` and its completion statistics are locked.
 
 ---
@@ -183,9 +183,9 @@ Processes have varied workloads. Short tasks (e.g., P2 with burst=3, P6 with bur
 2. **Behavior of CPU-Intensive Tasks:**
    - Processes with long burst times quickly consume their 3-unit time slices in $Q_0$ and $Q_1$, sinking down to $Q_2$. Once in $Q_2$, they run in Round Robin fashion without penalizing newly arriving short jobs.
 3. **Fixed Burst Symmetry:**
-   - In Fixed Burst mode (burst = 6), every process requires exactly two passes ($2 	imes 3$ units). All processes finish during their second round in $Q_1$. Turnaround times are uniformly spaced according to the order of arrival.
+   - In Fixed Burst mode (burst = 6), every process requires exactly two passes ($2 \times 3$ units). All processes finish during their second round in $Q_1$. Turnaround times are uniformly spaced according to the order of arrival.
 4. **Effect of Fixed Simulation Horizon ($T_{sim}$):**
-   - Imposing a fixed simulation time limit reflects real-world OS monitoring windows: within a 50-unit window, Fixed mode completes 8 smaller tasks (total required work $8 	imes 6 = 48$ units), while Variable mode executes 50 units of continuous computation with 100% CPU utilization, finishing the shortest jobs first while heavy batch tasks remain in progress.
+   - Imposing a fixed simulation time limit reflects real-world OS monitoring windows: within a 50-unit window, Fixed mode completes 8 smaller tasks (total required work $8 \times 6 = 48$ units), while Variable mode executes 50 units of continuous computation with 100% CPU utilization, finishing the shortest jobs first while heavy batch tasks remain in progress.
 
 ---
 
