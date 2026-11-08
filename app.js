@@ -357,7 +357,7 @@ function renderMathInspector(res) {
     lines.push(`AWT Calculation: (${res.completed.map(p => p.wt).join(' + ')}) / ${res.completed.length} = ${res.awt} units`);
     lines.push(`ATT Calculation: (${res.completed.map(p => p.tat).join(' + ')}) / ${res.completed.length} = ${res.att} units`);
 
-    box.innerText = lines.join("\\n");
+    box.innerText = lines.join("\n");
 }
 
 function togglePlayAnimation() {
@@ -467,7 +467,10 @@ function switchMainTab(tabId) {
     document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
     const activePanel = document.getElementById(tabId);
     if (activePanel) activePanel.style.display = "block";
-    if (window.event && window.event.currentTarget) {
+    const activeBtn = document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add("active");
+    } else if (window.event && window.event.currentTarget) {
         window.event.currentTarget.classList.add("active");
     }
 }

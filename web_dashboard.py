@@ -6,13 +6,10 @@ Group 7: Round Robin Time Slicing with Multilevel Feedback.
 
 import sys
 import os
-import json
 import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from typing import Dict, Any
 
-from mlfq.pcb import ProcessControlBlock
 from mlfq.scheduler import MLFQScheduler
 from mlfq.generator import generate_comparative_workload
 
@@ -352,16 +349,13 @@ def generate_html_report(
     for k, v in replacements.items():
         out_html = out_html.replace(k, v)
 
-    out_file = Path(__file__).parent / "simulation_results.html"
-    with open(out_file, "w", encoding="utf-8") as f:
-        f.write(out_html)
-
+    out_file = Path(__file__).parent / "index.html"
     return out_file
 
 
 def generate_and_open():
     out_path = generate_html_report()
-    print(f"Report generated at: {out_path}")
+    print(f"Opening interactive web dashboard at: {out_path}")
     webbrowser.open(out_path.as_uri())
 
 
@@ -371,7 +365,7 @@ if __name__ == "__main__":
         os.chdir(p.parent)
         print("Serving dashboard at http://localhost:8080 ...")
         server = HTTPServer(("localhost", 8080), SimpleHTTPRequestHandler)
-        webbrowser.open("http://localhost:8080/simulation_results.html")
+        webbrowser.open("http://localhost:8080/index.html")
         server.serve_forever()
     else:
         generate_and_open()

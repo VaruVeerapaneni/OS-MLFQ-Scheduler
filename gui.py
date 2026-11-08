@@ -6,12 +6,10 @@ Group 7: Round Robin Time Slicing with Multilevel Feedback.
 import tkinter as tk
 from tkinter import ttk, messagebox
 import random
-from typing import Dict, Any, List
+from typing import Any, List
 
-from mlfq.pcb import ProcessControlBlock
 from mlfq.scheduler import MLFQScheduler
-from mlfq.generator import generate_comparative_workload, generate_processes
-from mlfq.metrics import format_comparison_summary
+from mlfq.generator import generate_comparative_workload
 
 
 QUEUE_COLORS = {

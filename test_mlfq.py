@@ -4,7 +4,7 @@ Group 7: Round Robin Time Slicing with Multilevel Feedback.
 """
 
 import unittest
-from mlfq.pcb import ProcessControlBlock, ProcessState
+from mlfq.pcb import ProcessControlBlock
 from mlfq.scheduler import MLFQScheduler
 from mlfq.generator import generate_processes, generate_comparative_workload
 

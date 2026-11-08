@@ -5,9 +5,8 @@ Group 7: Round Robin Time Slicing with Multilevel Feedback.
 
 import sys
 import argparse
-from mlfq.pcb import ProcessControlBlock
 from mlfq.scheduler import MLFQScheduler
-from mlfq.generator import generate_comparative_workload, generate_processes
+from mlfq.generator import generate_comparative_workload
 from mlfq.metrics import (
     format_process_table,
     render_ascii_gantt,
