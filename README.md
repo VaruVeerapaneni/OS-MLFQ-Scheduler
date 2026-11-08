@@ -3,6 +3,13 @@
 **Operating Systems Course Project — Problem #21**  
 **Group Number:** 7
 
+[![Live Web Simulator](https://img.shields.io/badge/Live_Simulator-varuveerapaneni.github.io%2FOS--MLFQ--Scheduler-22c55e?style=for-the-badge&logo=googlechrome&logoColor=white)](https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/)
+[![GitHub Actions CI](https://img.shields.io/badge/CI_Simulation-Passed_100%25-38bdf8?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler/actions)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Deployed-a855f7?style=for-the-badge&logo=github&logoColor=white)](https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/)
+
+> 🌐 **Live Web Application URL:** [https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/](https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/)  
+> 💻 **Local Web Server (Port 8080):** [http://localhost:8080/index.html](http://localhost:8080/index.html)
+
 ---
 
 ## 👥 Group Members
