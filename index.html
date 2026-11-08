@@ -3,272 +3,931 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNIX MLFQ Simulator | Group 7</title>
+    <title>UNIX MLFQ Process Scheduling Simulation | OS Group 7</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary: #0ea5e9;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark-900: #0f172a;
-            --dark-800: #1e293b;
-            --dark-700: #334155;
-            --light-100: #f1f5f9;
-            --light-50: #f8fafc;
-            --border: #e2e8f0;
+            --bg-base: #090d16;
+            --bg-surface: #0f172a;
+            --bg-card: rgba(17, 24, 39, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(99, 102, 241, 0.35);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --cyan: #06b6d4;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --purple: #a855f7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
-        body { background: #f8fafc; color: #1e293b; line-height: 1.5; padding-bottom: 60px; }
-        
-        /* Navigation & Header */
-        header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 24px 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .header-content { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-        .logo-area h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
-        .group-pill { background: #3b82f6; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; }
-        .logo-area p { color: #94a3b8; font-size: 13px; margin-top: 4px; }
-        .header-links a { color: #38bdf8; text-decoration: none; font-size: 13px; font-weight: 600; padding: 8px 14px; border: 1px solid #334155; border-radius: 8px; transition: all 0.2s; }
-        .header-links a:hover { background: #334155; color: white; }
 
-        .container { max-width: 1300px; margin: 24px auto; padding: 0 20px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
 
-        /* Members banner */
-        .members-strip { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-        .members-title { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-        .members-tags { display: flex; gap: 10px; flex-wrap: wrap; }
-        .member-chip { background: #f1f5f9; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: #334155; border-left: 3px solid var(--primary); }
-        .member-chip span { color: var(--primary); font-weight: 700; }
+        /* Top Header */
+        header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 16px 28px;
+        }
+        .header-wrap {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        .brand-icon svg { width: 24px; height: 24px; fill: white; }
+        .brand-text h1 {
+            font-size: 19px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge-prob {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-gh {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-gh:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
 
-        /* Interactive Simulator Controls */
-        .controls-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; align-items: end; }
-        .control-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; }
-        .control-group input, .control-group select { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-weight: 600; color: #1e293b; outline: none; transition: border 0.2s; }
-        .control-group input:focus, .control-group select:focus { border-color: var(--primary); }
-        .btn-run { background: var(--primary); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
-        .btn-run:hover { background: var(--primary-hover); }
-        .btn-random { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; }
-        .btn-random:hover { background: #e2e8f0; }
+        .main-container {
+            max-width: 1400px;
+            margin: 28px auto;
+            padding: 0 24px;
+        }
+
+        /* Group Credentials Hero Strip */
+        .group-hero {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.3);
+        }
+        .group-hero-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .group-hero-title h2 {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--cyan);
+        }
+        .members-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .member-badge {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+        .member-badge:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+        .member-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .member-details { display: flex; flex-direction: column; }
+        .member-name { font-size: 12px; font-weight: 700; color: #f1f5f9; }
+        .member-id { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--cyan); }
+
+        /* Simulator Interactive Control Deck */
+        .control-deck {
+            background: var(--bg-card);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+        .deck-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .deck-header h3 {
+            font-size: 15px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e2e8f0;
+        }
+        .preset-select-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .preset-select-wrap span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .preset-select {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .deck-inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 14px;
+            align-items: end;
+            margin-bottom: 18px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .input-group input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 9px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .input-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        /* Action Buttons Toolbar */
+        .deck-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-top: 1px solid var(--border-glass);
+            padding-top: 16px;
+        }
+        .playback-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-ctrl {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: white;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+        }
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid var(--border-glass);
+        }
+        .btn-secondary:hover {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .btn-accent {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn-accent:hover {
+            background: rgba(16, 185, 129, 0.25);
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .speed-control select {
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--cyan);
+            border: 1px solid var(--border-glass);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            outline: none;
+        }
+
+        /* CPU Core Live Status Display */
+        .cpu-live-strip {
+            background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .cpu-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 12px var(--emerald);
+            animation: pulse 1.8s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .cpu-text-box { display: flex; flex-direction: column; }
+        .cpu-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); }
+        .cpu-val { font-size: 14px; font-weight: 800; color: #38bdf8; font-family: 'JetBrains Mono', monospace; }
+
+        .time-counter {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
 
         /* Navigation Tabs */
-        .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
-        .tab-btn { background: none; border: none; padding: 10px 18px; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; position: relative; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tabs-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 2px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active {
+            color: var(--cyan);
+            background: rgba(6, 182, 212, 0.08);
+            border-bottom: 2px solid var(--cyan);
+        }
 
         /* KPI Cards Grid */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .kpi-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-        .kpi-title { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
-        .kpi-values { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; }
-        .kpi-val-box { }
-        .kpi-val-mode { font-size: 11px; color: #94a3b8; font-weight: 600; }
-        .kpi-val-number { font-size: 20px; font-weight: 800; }
-        .text-fixed { color: var(--primary); }
-        .text-var { color: var(--success); }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--cyan));
+        }
+        .kpi-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+        .kpi-split {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-top: 12px;
+        }
+        .kpi-num-box { display: flex; flex-direction: column; }
+        .kpi-mode { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-dim); }
+        .kpi-val { font-size: 22px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .color-fixed { color: var(--cyan); }
+        .color-var { color: var(--emerald); }
 
-        /* Queue Visualizer */
-        .queues-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px; margin-bottom: 24px; }
-        .queue-row { display: flex; align-items: center; margin-bottom: 12px; gap: 14px; }
-        .queue-badge { width: 150px; font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 6px; text-align: center; color: white; flex-shrink: 0; }
-        .badge-q0 { background: #2563eb; }
-        .badge-q1 { background: #10b981; }
-        .badge-q2 { background: #f59e0b; }
-        .queue-track { flex-grow: 1; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; min-height: 44px; display: flex; align-items: center; padding: 4px 10px; gap: 8px; overflow-x: auto; }
-        .proc-chip { background: white; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .proc-chip-rem { background: #e0f2fe; color: #0369a1; border-radius: 4px; padding: 1px 5px; font-size: 10px; }
+        /* Multilevel Feedback Queue Visualization */
+        .mlfq-visualizer-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+        .mlfq-queue-lane {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .queue-title-badge {
+            width: 170px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .badge-q0 { background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); }
+        .badge-q1 { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .badge-q2 { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
 
-        /* Gantt Chart SVG */
-        .gantt-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 24px; }
-        .gantt-container { width: 100%; overflow-x: auto; }
-        svg.gantt-svg { width: 100%; height: 95px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; }
+        .queue-slots {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-grow: 1;
+            overflow-x: auto;
+            min-height: 40px;
+            padding: 2px 0;
+        }
+        .queue-empty-msg { font-size: 12px; color: var(--text-dim); font-style: italic; }
+        .pcb-chip {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .pcb-chip-rem {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--cyan);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+        }
+
+        /* Gantt Charts */
+        .gantt-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+        .gantt-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+        .gantt-canvas-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border-glass);
+            background: rgba(11, 15, 25, 0.8);
+        }
+        svg.gantt-svg { width: 100%; height: 95px; }
 
         /* Tables */
-        .table-card { background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; }
-        .card-header-bar { padding: 14px 20px; background: #f8fafc; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; color: #334155; display: flex; justify-content: space-between; align-items: center; }
+        .table-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .table-panel-header {
+            padding: 16px 22px;
+            background: rgba(15, 23, 42, 0.9);
+            border-bottom: 1px solid var(--border-glass);
+            font-size: 14px;
+            font-weight: 800;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th { background: #f1f5f9; color: #475569; padding: 10px 14px; font-weight: 700; border-bottom: 1px solid var(--border); }
-        td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; }
-        tr:hover { background: #f8fafc; }
-        .badge-status { padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 700; }
-        .badge-term { background: #dcfce7; color: #166534; }
-        .badge-ready { background: #fef3c7; color: #92400e; }
-        .badge-run { background: #dbeafe; color: #1e40af; }
+        th {
+            background: rgba(15, 23, 42, 0.75);
+            color: var(--text-muted);
+            padding: 12px 16px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-glass);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #cbd5e1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+        tr:hover { background: rgba(255, 255, 255, 0.03); }
+        .badge-status {
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            text-transform: uppercase;
+        }
+        .status-term { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-ready { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-run { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
 
-        /* Documentation & Report tab */
-        .doc-section { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 28px; margin-bottom: 24px; line-height: 1.7; font-size: 14px; }
-        .doc-section h2 { font-size: 18px; color: var(--dark-900); margin-bottom: 14px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
-        .doc-section h3 { font-size: 15px; color: var(--primary); margin: 18px 0 8px; }
-        .doc-section p, .doc-section ul { color: #334155; margin-bottom: 12px; }
-        .doc-section ul { padding-left: 24px; }
-        .code-box { background: #0f172a; color: #38bdf8; padding: 14px 18px; border-radius: 8px; font-family: monospace; font-size: 13px; margin: 12px 0; overflow-x: auto; }
+        /* Calculation Formula Box */
+        .calc-modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .calc-header { font-size: 15px; font-weight: 800; color: var(--cyan); margin-bottom: 14px; }
+        .formula-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .formula-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+        .formula-title { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+        .formula-eq { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #f43f5e; font-weight: 700; }
+        .formula-exp { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+        /* Custom Process Add Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: #111827;
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .modal-header h3 { font-size: 16px; font-weight: 800; color: #f8fafc; }
+        .close-btn { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="header-content">
-        <div class="logo-area">
-            <h1>UNIX Multilevel Feedback Queue (MLFQ) Simulator <span class="group-pill">Group 7</span></h1>
-            <p>OS Course Project &bull; Problem #21 &bull; Round Robin Time Slicing ($Q = 3$ units) &bull; Fixed vs. Variable Burst Comparison</p>
+        <div class="brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+            </div>
+            <div class="brand-text">
+                <h1>UNIX Multilevel Feedback Queue (MLFQ) Simulator</h1>
+                <p>
+                    <span>Operating Systems Course Project</span> &bull; 
+                    <span class="badge-prob">Problem #21</span> &bull; 
+                    <span>Group 7</span>
+                </p>
+            </div>
         </div>
-        <div class="header-links">
-            <a href="https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler" target="_blank">⭐ View on GitHub</a>
-            <a href="PROJECT_REPORT.md" target="_blank">📄 Full Project Report</a>
+        <div class="header-actions">
+            <a href="https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler" target="_blank" class="btn-gh">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                GitHub Repository
+            </a>
+            <a href="PROJECT_REPORT.md" target="_blank" class="btn-gh">📄 Academic Report</a>
         </div>
     </div>
 </header>
 
-<div class="container">
-    <!-- Group Members Banner -->
-    <div class="members-strip">
-        <div class="members-title">👥 Group Members (Group 7)</div>
-        <div class="members-tags">
-            <div class="member-chip"><span>AP24110010509</span> VEERAPANENI VARALAKSHMI</div>
-            <div class="member-chip"><span>AP24110010538</span> GANDHAM SAI POOJITHA</div>
-            <div class="member-chip"><span>AP24110012001</span> KANDIMALLA KEERTHI SREE</div>
-            <div class="member-chip"><span>AP24110011723</span> ARADHYA SINGH</div>
+<div class="main-container">
+    <!-- Group Members Hero Bar -->
+    <div class="group-hero">
+        <div class="group-hero-title">
+            <svg width="20" height="20" fill="var(--cyan)" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            <h2>Group 7 Project Credentials</h2>
+        </div>
+        <div class="members-grid">
+            <div class="member-badge">
+                <div class="member-avatar">VV</div>
+                <div class="member-details">
+                    <span class="member-name">VEERAPANENI VARALAKSHMI</span>
+                    <span class="member-id">AP24110010509</span>
+                </div>
+            </div>
+            <div class="member-badge">
+                <div class="member-avatar">SP</div>
+                <div class="member-details">
+                    <span class="member-name">GANDHAM SAI POOJITHA</span>
+                    <span class="member-id">AP24110010538</span>
+                </div>
+            </div>
+            <div class="member-badge">
+                <div class="member-avatar">KS</div>
+                <div class="member-details">
+                    <span class="member-name">KANDIMALLA KEERTHI SREE</span>
+                    <span class="member-id">AP24110012001</span>
+                </div>
+            </div>
+            <div class="member-badge">
+                <div class="member-avatar">AS</div>
+                <div class="member-details">
+                    <span class="member-name">ARADHYA SINGH</span>
+                    <span class="member-id">AP24110011723</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Interactive Simulator Controls -->
-    <div class="controls-card">
-        <div class="controls-grid">
-            <div class="control-group">
+    <!-- Simulator Interactive Control Deck -->
+    <div class="control-deck">
+        <div class="deck-header">
+            <h3>
+                <svg width="18" height="18" fill="var(--primary)" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
+                Simulation Parameters & Presets
+            </h3>
+            <div class="preset-select-wrap">
+                <span>Preset Test Scenarios:</span>
+                <select class="preset-select" id="presetSelect" onchange="applyPreset()">
+                    <option value="standard">Standard Benchmark (N=8, Q=3, T=60)</option>
+                    <option value="interactive_short">Short Job First (SJF) Interactive Mode</option>
+                    <option value="heavy_cpu">CPU-Bound Queue Demotion Test</option>
+                    <option value="preemption">Preemption & Priority Interruption</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="deck-inputs-grid">
+            <div class="input-group">
                 <label>Time Quantum (Q)</label>
                 <input type="number" id="inpQuantum" value="3" min="1" max="15">
             </div>
-            <div class="control-group">
+            <div class="input-group">
                 <label>Sim Time Limit (T)</label>
                 <input type="number" id="inpSimTime" value="60" min="10" max="300">
             </div>
-            <div class="control-group">
-                <label>Processes (N)</label>
-                <input type="number" id="inpProcs" value="8" min="2" max="20">
+            <div class="input-group">
+                <label>Process Count (N)</label>
+                <input type="number" id="inpProcs" value="8" min="2" max="25">
             </div>
-            <div class="control-group">
-                <label>Fixed Burst</label>
-                <input type="number" id="inpFixedBurst" value="6" min="1" max="30">
+            <div class="input-group">
+                <label>Fixed Burst Time</label>
+                <input type="number" id="inpFixedBurst" value="6" min="1" max="40">
             </div>
-            <div class="control-group">
-                <label>Var Burst (Min - Max)</label>
-                <div style="display:flex; gap:6px;">
-                    <input type="number" id="inpMinBurst" value="2" min="1" max="10" style="width:50%;">
-                    <input type="number" id="inpMaxBurst" value="14" min="2" max="40" style="width:50%;">
-                </div>
+            <div class="input-group">
+                <label>Variable Min Burst</label>
+                <input type="number" id="inpMinBurst" value="2" min="1" max="10">
             </div>
-            <div class="control-group">
+            <div class="input-group">
+                <label>Variable Max Burst</label>
+                <input type="number" id="inpMaxBurst" value="14" min="2" max="40">
+            </div>
+            <div class="input-group">
                 <label>Random Seed</label>
                 <input type="number" id="inpSeed" value="42">
             </div>
-            <div class="control-group">
-                <button class="btn-random" onclick="randomizeSeed()">🎲 New Seed</button>
+        </div>
+
+        <div class="deck-actions">
+            <div class="playback-controls">
+                <button class="btn-ctrl btn-primary" onclick="runInstantSimulator()">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    Run Full Simulation
+                </button>
+                <button class="btn-ctrl btn-accent" id="btnPlayPause" onclick="togglePlayAnimation()">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                    Play Step Animation
+                </button>
+                <button class="btn-ctrl btn-secondary" onclick="stepForwardOneTick()">⏭ Step 1 Tick</button>
+                <button class="btn-ctrl btn-secondary" onclick="randomizeSeed()">🎲 Randomize Seed</button>
+                <button class="btn-ctrl btn-secondary" onclick="openAddProcessModal()">➕ Add Custom Job</button>
             </div>
-            <div class="control-group">
-                <button class="btn-run" onclick="runSimulator()">▶ Run Simulation</button>
+            <div class="speed-control">
+                <span>Speed:</span>
+                <select id="animSpeed">
+                    <option value="600">0.5x Slow</option>
+                    <option value="300" selected>1.0x Normal</option>
+                    <option value="120">2.5x Fast</option>
+                    <option value="40">5.0x Turbo</option>
+                </select>
             </div>
+        </div>
+    </div>
+
+    <!-- CPU Core Live Execution Bar -->
+    <div class="cpu-live-strip">
+        <div class="cpu-status-indicator">
+            <div class="pulse-dot"></div>
+            <div class="cpu-text-box">
+                <span class="cpu-label">Active CPU Core Dispatch</span>
+                <span class="cpu-val" id="cpuActiveProc">IDLE (Waiting for dispatch)</span>
+            </div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <div class="time-counter">Simulation Clock: T = <span id="clockDisplay">0</span></div>
+            <div class="time-counter" style="color:#f43f5e;">Quantum Left: <span id="quantumLeftDisplay">3</span></div>
         </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('tab-sim')">📊 Interactive Simulation & Gantt Charts</button>
-        <button class="tab-btn" onclick="switchTab('tab-compare')">⚖️ Side-by-Side Comparison</button>
-        <button class="tab-btn" onclick="switchTab('tab-doc')">📘 Problem Statement & Theory</button>
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchMainTab('tab-analytics')">📊 Analytics & Live Queues</button>
+        <button class="tab-btn" onclick="switchMainTab('tab-comparative')">⚖️ Side-by-Side Comparison</button>
+        <button class="tab-btn" onclick="switchMainTab('tab-math')">🧮 Calculations & Formulas</button>
+        <button class="tab-btn" onclick="switchMainTab('tab-theory')">📘 Course Theory & Problem #21</button>
     </div>
 
-    <!-- TAB 1: Live Simulator & Gantt Charts -->
-    <div id="tab-sim" class="tab-pane">
+    <!-- TAB 1: Live Analytics & Queues -->
+    <div id="tab-analytics" class="tab-content">
         <!-- KPI Metrics Grid -->
         <div class="kpi-grid">
             <div class="kpi-card">
-                <div class="kpi-title">Average Waiting Time (AWT)</div>
-                <div class="kpi-values">
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedAWT">-</div></div>
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarAWT">-</div></div>
+                <div class="kpi-title">Average Waiting Time (AWT) <span>WT</span></div>
+                <div class="kpi-split">
+                    <div class="kpi-num-box"><span class="kpi-mode">Fixed Burst</span><span class="kpi-val color-fixed" id="valFixedAWT">-</span></div>
+                    <div class="kpi-num-box"><span class="kpi-mode">Variable Burst</span><span class="kpi-val color-var" id="valVarAWT">-</span></div>
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-title">Average Turnaround Time (ATT)</div>
-                <div class="kpi-values">
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedATT">-</div></div>
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarATT">-</div></div>
+                <div class="kpi-title">Average Turnaround Time (ATT) <span>TAT</span></div>
+                <div class="kpi-split">
+                    <div class="kpi-num-box"><span class="kpi-mode">Fixed Burst</span><span class="kpi-val color-fixed" id="valFixedATT">-</span></div>
+                    <div class="kpi-num-box"><span class="kpi-mode">Variable Burst</span><span class="kpi-val color-var" id="valVarATT">-</span></div>
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-title">Completed Processes</div>
-                <div class="kpi-values">
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedDone">-</div></div>
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarDone">-</div></div>
+                <div class="kpi-title">Completed Processes <span>DONE</span></div>
+                <div class="kpi-split">
+                    <div class="kpi-num-box"><span class="kpi-mode">Fixed</span><span class="kpi-val color-fixed" id="valFixedDone">-</span></div>
+                    <div class="kpi-num-box"><span class="kpi-mode">Variable</span><span class="kpi-val color-var" id="valVarDone">-</span></div>
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-title">CPU Utilization</div>
-                <div class="kpi-values">
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedCPU">-</div></div>
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarCPU">-</div></div>
+                <div class="kpi-title">CPU Utilization <span>UTIL</span></div>
+                <div class="kpi-split">
+                    <div class="kpi-num-box"><span class="kpi-mode">Fixed</span><span class="kpi-val color-fixed" id="valFixedCPU">-</span></div>
+                    <div class="kpi-num-box"><span class="kpi-mode">Variable</span><span class="kpi-val color-var" id="valVarCPU">-</span></div>
                 </div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-title">System Throughput</div>
-                <div class="kpi-values">
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Fixed</div><div class="kpi-val-number text-fixed" id="valFixedTP">-</div></div>
-                    <div class="kpi-val-box"><div class="kpi-val-mode">Variable</div><div class="kpi-val-number text-var" id="valVarTP">-</div></div>
+                <div class="kpi-title">Throughput (Proc / Unit) <span>RATE</span></div>
+                <div class="kpi-split">
+                    <div class="kpi-num-box"><span class="kpi-mode">Fixed</span><span class="kpi-val color-fixed" id="valFixedTP">-</span></div>
+                    <div class="kpi-num-box"><span class="kpi-mode">Variable</span><span class="kpi-val color-var" id="valVarTP">-</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- MLFQ Priority Queues Structure Visualizer -->
-        <div class="queues-card">
-            <h3 style="font-size:14px; font-weight:700; margin-bottom:12px; color:#334155;">🔄 Multilevel Feedback Queue Hierarchy</h3>
-            <div class="queue-row">
-                <div class="queue-badge badge-q0">Q0: High Priority (RR, Q=3)</div>
-                <div class="queue-track" id="trackQ0"><span style="color:#94a3b8; font-size:12px;">New process arrivals enter here</span></div>
+        <!-- Real-time Multilevel Queue Hierarchy Visualizer -->
+        <div class="mlfq-visualizer-card">
+            <h3 style="font-size:14px; font-weight:800; color:#f1f5f9; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                <svg width="16" height="16" fill="var(--cyan)" viewBox="0 0 24 24"><path d="M19 15v4H5v-4h14m1-2H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM7 7V3H5v4h2m4-4H9v4h2V3m4 0h-2v4h2V3z"/></svg>
+                Multilevel Feedback Queue Live Hierarchy
+            </h3>
+            <div class="mlfq-queue-lane">
+                <div class="queue-title-badge badge-q0">Q0 &bull; High (RR, Q=3)</div>
+                <div class="queue-slots" id="slotQ0"><span class="queue-empty-msg">New arrivals enter here</span></div>
             </div>
-            <div class="queue-row">
-                <div class="queue-badge badge-q1">Q1: Medium Priority (RR, Q=3)</div>
-                <div class="queue-track" id="trackQ1"><span style="color:#94a3b8; font-size:12px;">Processes that exceed Q0 time quantum demote here</span></div>
+            <div class="mlfq-queue-lane">
+                <div class="queue-title-badge badge-q1">Q1 &bull; Medium (RR, Q=3)</div>
+                <div class="queue-slots" id="slotQ1"><span class="queue-empty-msg">Jobs that exceed Q0 time quantum demote here</span></div>
             </div>
-            <div class="queue-row">
-                <div class="queue-badge badge-q2">Q2: Low Priority (RR, Q=3)</div>
-                <div class="queue-track" id="trackQ2"><span style="color:#94a3b8; font-size:12px;">CPU-bound batch tasks demote here</span></div>
+            <div class="mlfq-queue-lane">
+                <div class="queue-title-badge badge-q2">Q2 &bull; Low (RR, Q=3)</div>
+                <div class="queue-slots" id="slotQ2"><span class="queue-empty-msg">Long CPU-bound background jobs demote here</span></div>
             </div>
         </div>
 
-        <!-- Fixed Burst Gantt & Table -->
-        <div class="gantt-card">
-            <div class="card-header-bar" style="background:transparent; padding:0 0 12px 0;">
-                <span>⏱️ Scenario 1: Fixed Burst Times Gantt Chart (Burst = <span id="lblFixedBurst">6</span> units, Quantum = 3)</span>
+        <!-- Gantt 1: Fixed Burst -->
+        <div class="gantt-panel">
+            <div class="gantt-title-row">
+                <span>⏱️ Scenario 1: Fixed Burst Times Gantt Chart (Burst = <span id="lblFixedB">6</span> units, Q = 3)</span>
+                <span style="font-size:12px; color:var(--text-muted);">Round Robin Time Slicing</span>
             </div>
-            <div class="gantt-container" id="ganttFixedContainer"></div>
+            <div class="gantt-canvas-wrap" id="ganttFixedBox"></div>
         </div>
 
-        <div class="table-card">
-            <div class="card-header-bar">Fixed Burst Process Execution Table</div>
+        <!-- Table 1: Fixed Burst -->
+        <div class="table-panel">
+            <div class="table-panel-header">Fixed Burst Process Execution Table</div>
             <div style="overflow-x:auto;">
                 <table id="tblFixed">
                     <thead>
-                        <tr><th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th><th>Final Queue</th><th>State</th><th>Completion</th><th>Turnaround (TAT)</th><th>Waiting (WT)</th><th>Response (RT)</th></tr>
+                        <tr><th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th><th>Final Queue</th><th>State</th><th>Finish</th><th>TAT</th><th>WT</th><th>RT</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Variable Burst Gantt & Table -->
-        <div class="gantt-card" style="margin-top:28px;">
-            <div class="card-header-bar" style="background:transparent; padding:0 0 12px 0;">
-                <span>🔀 Scenario 2: Variable (Randomized) Burst Times Gantt Chart (Quantum = 3)</span>
+        <!-- Gantt 2: Variable Burst -->
+        <div class="gantt-panel" style="margin-top:28px;">
+            <div class="gantt-title-row">
+                <span>🔀 Scenario 2: Variable (Randomized) Burst Times Gantt Chart (Q = 3)</span>
+                <span style="font-size:12px; color:var(--text-muted);">Dynamic SJF Feedback Approximation</span>
             </div>
-            <div class="gantt-container" id="ganttVarContainer"></div>
+            <div class="gantt-canvas-wrap" id="ganttVarBox"></div>
         </div>
 
-        <div class="table-card">
-            <div class="card-header-bar">Variable (Randomized) Burst Process Execution Table</div>
+        <!-- Table 2: Variable Burst -->
+        <div class="table-panel">
+            <div class="table-panel-header">Variable (Randomized) Burst Process Execution Table</div>
             <div style="overflow-x:auto;">
                 <table id="tblVar">
                     <thead>
-                        <tr><th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th><th>Final Queue</th><th>State</th><th>Completion</th><th>Turnaround (TAT)</th><th>Waiting (WT)</th><th>Response (RT)</th></tr>
+                        <tr><th>PID</th><th>Arrival</th><th>Burst</th><th>Remaining</th><th>Final Queue</th><th>State</th><th>Finish</th><th>TAT</th><th>WT</th><th>RT</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -277,77 +936,117 @@
     </div>
 
     <!-- TAB 2: Side-by-Side Comparison -->
-    <div id="tab-compare" class="tab-pane" style="display:none;">
-        <div class="table-card">
-            <div class="card-header-bar">⚖️ Complete Side-by-Side Performance Comparison</div>
+    <div id="tab-comparative" class="tab-content" style="display:none;">
+        <div class="table-panel">
+            <div class="table-panel-header">⚖️ Comprehensive Performance Metrics Matrix</div>
             <div style="overflow-x:auto;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Performance Metric</th>
-                            <th style="color:var(--primary);">Fixed Burst Mode</th>
-                            <th style="color:var(--success);">Variable (Randomized) Burst Mode</th>
+                            <th>Evaluation Metric</th>
+                            <th style="color:var(--cyan);">Fixed Burst Mode</th>
+                            <th style="color:var(--emerald);">Variable (Randomized) Burst Mode</th>
+                            <th>Mathematical / Operational Implication</th>
                         </tr>
                     </thead>
-                    <tbody id="tblComparisonBody"></tbody>
+                    <tbody id="tblCompareBody"></tbody>
                 </table>
             </div>
         </div>
+    </div>
 
-        <div class="doc-section">
-            <h2>💡 Core Academic Insights & Findings</h2>
-            <ul>
-                <li><strong>Interactive Process Responsiveness:</strong> In Variable Burst mode, processes with short burst times ($\le 3$ units) finish entirely in $Q_0$ without suffering queue degradation. This keeps their turnaround time exceptionally low!</li>
-                <li><strong>CPU-Bound Degradation:</strong> Processes with long execution requirements exhaust their 3-unit time slice and are demoted to $Q_1$, and subsequently to $Q_2$. This prevents heavy computations from starving short or I/O-bound processes.</li>
-                <li><strong>Fairness Under Fixed Workloads:</strong> When burst times are uniform, Round Robin time slicing distributes waiting time symmetrically across all processes in arrival order.</li>
-            </ul>
+    <!-- TAB 3: Calculations & Formulas -->
+    <div id="tab-math" class="tab-content" style="display:none;">
+        <div class="calc-modal">
+            <div class="calc-header">🧮 Process Scheduling Mathematics & Step-by-Step Derivations</div>
+            <div class="formula-card-grid">
+                <div class="formula-box">
+                    <div class="formula-title">Turnaround Time (TAT)</div>
+                    <div class="formula-eq">TAT = Completion Time - Arrival Time</div>
+                    <div class="formula-exp">Total elapsed interval spent by the process from arrival until full termination.</div>
+                </div>
+                <div class="formula-box">
+                    <div class="formula-title">Waiting Time (WT)</div>
+                    <div class="formula-eq">WT = Turnaround Time - Burst Time</div>
+                    <div class="formula-exp">Time spent waiting in ready queues without CPU allocation.</div>
+                </div>
+                <div class="formula-box">
+                    <div class="formula-title">Response Time (RT)</div>
+                    <div class="formula-eq">RT = First CPU Dispatch - Arrival Time</div>
+                    <div class="formula-exp">Interval until the user receives the initial reaction from the operating system.</div>
+                </div>
+                <div class="formula-box">
+                    <div class="formula-title">Average Waiting Time (AWT)</div>
+                    <div class="formula-eq">AWT = (Σ WT) / N_completed</div>
+                    <div class="formula-exp">Primary benchmark indicating queuing delay across completed workloads.</div>
+                </div>
+            </div>
+            <div style="background:rgba(15,23,42,0.8); border:1px solid var(--border-glass); border-radius:10px; padding:16px;">
+                <h4 style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:8px;">Live Process Calculation Inspector:</h4>
+                <div id="processMathInspector" style="font-family:'JetBrains Mono', monospace; font-size:12px; color:#94a3b8; line-height:1.8;"></div>
+            </div>
         </div>
     </div>
 
-    <!-- TAB 3: Problem Statement & Documentation -->
-    <div id="tab-doc" class="tab-pane" style="display:none;">
-        <div class="doc-section">
-            <h2>📘 Course Problem Statement (Problem #21)</h2>
-            <p><strong>"UNIX operating system uses Round robin Time slicing with multilevel feedback for process scheduling. Assume that the processes (PCB's) arrive at random. Assume the time slice is 3 units. Simulate Round robin time slicing with fixed and variable (Randomized) burst times. Run the processes for fixed amount of time and find the average waiting time, average turn-around time of the processes completed."</strong></p>
-            
-            <h3>🎓 Course & Group Information</h3>
-            <ul>
-                <li><strong>Course:</strong> Operating Systems</li>
-                <li><strong>Project Group:</strong> Group 7</li>
-                <li><strong>Team Members:</strong>
-                    <ul>
-                        <li>AP24110010509 — VEERAPANENI VARALAKSHMI</li>
-                        <li>AP24110010538 — GANDHAM SAI POOJITHA</li>
-                        <li>AP24110012001 — KANDIMALLA KEERTHI SREE</li>
-                        <li>AP24110011723 — ARADHYA SINGH</li>
-                    </ul>
-                </li>
-            </ul>
-
-            <h3>⚙️ Scheduling Rules Modeled</h3>
-            <ul>
-                <li><strong>Multi-Level Priority Queues:</strong> 3 queues ($Q_0$: High, $Q_1$: Medium, $Q_2$: Low).</li>
-                <li><strong>Round Robin Slicing:</strong> Strict time quantum of 3 units ($Q = 3$).</li>
-                <li><strong>Priority Feedback Demotion:</strong> A process that uses up its 3 units without completing is demoted to the next lower queue ($Q_i 	o Q_{i+1}$).</li>
-                <li><strong>Priority Preemption:</strong> If a new process arrives at higher priority ($Q_0$) while a lower queue process is running, the CPU immediately dispatches the higher priority process.</li>
-                <li><strong>Fixed Simulation Horizon ($T_{sim}$):</strong> Evaluates completed processes within a designated observation timeframe and computes interim metrics for in-flight tasks.</li>
+    <!-- TAB 4: Course Theory & Problem 21 -->
+    <div id="tab-theory" class="tab-content" style="display:none;">
+        <div class="calc-modal" style="line-height:1.8;">
+            <div class="calc-header">📘 Problem Statement #21 & Operating Systems Theory</div>
+            <p style="color:#cbd5e1; margin-bottom:14px;">
+                <strong>"UNIX operating system uses Round robin Time slicing with multilevel feedback for process scheduling. Assume that the processes (PCB's) arrive at random. Assume the time slice is 3 units. Simulate Round robin time slicing with fixed and variable (Randomized) burst times. Run the processes for fixed amount of time and find the average waiting time, average turn-around time of the processes completed."</strong>
+            </p>
+            <h4 style="font-size:14px; color:var(--cyan); margin:18px 0 8px;">Key Mechanisms Verified:</h4>
+            <ul style="color:#94a3b8; padding-left:22px; font-size:13px;">
+                <li><strong>Priority Feedback Decay:</strong> Long jobs forfeit priority upon quantum ($Q=3$) exhaustion.</li>
+                <li><strong>Dynamic Preemption:</strong> Newly arriving interactive processes preempt lower-priority batch processes.</li>
+                <li><strong>Fairness & Responsiveness:</strong> Preserves interactive low-latency for short tasks while guaranteeing continuous throughput for heavy computations.</li>
             </ul>
         </div>
     </div>
 </div>
 
+<!-- Modal for Custom Process Entry -->
+<div class="modal-overlay" id="addProcModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add Custom Process</h3>
+            <button class="close-btn" onclick="closeAddProcessModal()">&times;</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div class="input-group">
+                <label>Process PID</label>
+                <input type="text" id="custPid" value="P_CUSTOM">
+            </div>
+            <div class="input-group">
+                <label>Arrival Time (T)</label>
+                <input type="number" id="custArr" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label>CPU Burst Time</label>
+                <input type="number" id="custBurst" value="8" min="1">
+            </div>
+            <button class="btn-ctrl btn-primary" onclick="submitCustomProcess()" style="margin-top:8px;">Add to Simulation</button>
+        </div>
+    </div>
+</div>
+
 <script>
-// Pseudo-Random Number Generator for reproducible testing
 class PRNG {
     constructor(seed) { this.m = 0x80000000; this.a = 1103515245; this.c = 12345; this.state = seed ? seed : Math.floor(Math.random() * (this.m - 1)); }
     nextInt(min, max) { this.state = (this.a * this.state + this.c) % this.m; return min + Math.floor((this.state / this.m) * (max - min + 1)); }
 }
 
-const PID_COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#f97316", "#06b6d4", "#eab308", "#6366f1", "#14b8a6", "#f43f5e", "#84cc16", "#a855f7"];
+const PID_PALETTE = ["#6366f1", "#06b6d4", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6", "#f43f5e", "#eab308", "#3b82f6", "#84cc16", "#a855f7"];
 
-// MLFQ Process Simulation Engine in JavaScript
-function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
-    const procs = processes.map(p => ({
+let globalCustomProcs = [];
+let animInterval = null;
+let animCurrentTick = 0;
+let isAnimating = false;
+let latestFixedRes = null;
+let latestVarRes = null;
+
+function simulateMLFQEngine(workload, timeSlice, maxTime, numQueues = 3) {
+    const procs = workload.map(p => ({
         pid: p.pid, arrival: p.arrival, burst: p.burst, remaining: p.burst,
         queue: 0, state: "NEW", startTime: null, completionTime: null,
         tat: null, wt: 0, rt: null, sliceSpent: 0
@@ -357,6 +1056,7 @@ function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
     const queues = Array.from({ length: numQueues }, () => []);
     const gantt = [];
     const completed = [];
+    const ticksHistory = [];
 
     let curTime = 0;
     let running = null;
@@ -365,7 +1065,7 @@ function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
     let idleTime = 0;
 
     while (curTime < maxTime) {
-        // 1. Arriving processes
+        // Arrivals
         while (arrivals.length > 0 && arrivals[0].arrival <= curTime) {
             const arriving = arrivals.shift();
             arriving.state = "READY";
@@ -374,7 +1074,7 @@ function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
             queues[0].push(arriving);
         }
 
-        // 2. Preemption
+        // Preemption
         if (running) {
             let higherReady = false;
             for (let q = 0; q < running.queue; q++) {
@@ -388,7 +1088,7 @@ function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
             }
         }
 
-        // 3. Dispatch
+        // Dispatch
         if (!running) {
             for (let q = 0; q < numQueues; q++) {
                 if (queues[q].length > 0) {
@@ -399,14 +1099,23 @@ function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
             }
         }
 
-        // 4. Execution
+        // Record Snapshot for step animation
+        ticksHistory.push({
+            t: curTime,
+            runningPid: running ? `${running.pid} (Q${running.queue}, Rem:${running.remaining})` : "IDLE",
+            sliceLeft: sliceRemaining,
+            q0: queues[0].map(p => `${p.pid} (${p.remaining})`),
+            q1: queues[1].map(p => `${p.pid} (${p.remaining})`),
+            q2: queues[2].map(p => `${p.pid} (${p.remaining})`)
+        });
+
+        // Execution
         if (running) {
             if (running.startTime === null) {
                 running.startTime = curTime;
                 running.rt = curTime - running.arrival;
             }
 
-            // Gantt
             if (gantt.length > 0 && gantt[gantt.length - 1].pid === running.pid && gantt[gantt.length - 1].queue === running.queue && gantt[gantt.length - 1].end === curTime) {
                 gantt[gantt.length - 1].end = curTime + 1;
             } else {
@@ -435,7 +1144,6 @@ function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
                 running = null;
             }
         } else {
-            // Idle
             if (gantt.length > 0 && gantt[gantt.length - 1].pid === "IDLE" && gantt[gantt.length - 1].end === curTime) {
                 gantt[gantt.length - 1].end = curTime + 1;
             } else {
@@ -457,28 +1165,23 @@ function simulateMLFQ(processes, timeSlice, maxTime, numQueues = 3) {
         }
     }
 
-    if (running && running.remaining > 0) queues[running.queue].unshift(running);
-
-    // Incomplete processes interim waiting time
     procs.forEach(p => {
         if (p.remaining > 0 && curTime >= p.arrival) {
-            const timeInSys = curTime - p.arrival;
-            const executed = p.burst - p.remaining;
-            p.wt = Math.max(0, timeInSys - executed);
+            p.wt = Math.max(0, (curTime - p.arrival) - (p.burst - p.remaining));
         }
     });
 
     const doneCount = completed.length;
-    const awt = doneCount > 0 ? (completed.reduce((a, b) => a + b.wt, 0) / doneCount).toFixed(2) : "0.0";
-    const att = doneCount > 0 ? (completed.reduce((a, b) => a + b.tat, 0) / doneCount).toFixed(2) : "0.0";
-    const art = doneCount > 0 ? (completed.reduce((a, b) => a + (b.rt || 0), 0) / doneCount).toFixed(2) : "0.0";
+    const awt = doneCount > 0 ? (completed.reduce((a, b) => a + b.wt, 0) / doneCount).toFixed(2) : "0.00";
+    const att = doneCount > 0 ? (completed.reduce((a, b) => a + b.tat, 0) / doneCount).toFixed(2) : "0.00";
+    const art = doneCount > 0 ? (completed.reduce((a, b) => a + (b.rt || 0), 0) / doneCount).toFixed(2) : "0.00";
     const cpu = ((busyTime / Math.max(1, curTime)) * 100).toFixed(1);
     const tp = (doneCount / Math.max(1, curTime)).toFixed(4);
 
-    return { procs, completed, gantt, awt, att, art, cpu, tp, doneCount, total: procs.length, busyTime, idleTime, queues };
+    return { procs, completed, gantt, awt, att, art, cpu, tp, doneCount, total: procs.length, ticksHistory, queues };
 }
 
-function renderGanttSVG(segments, maxTime) {
+function renderGantt(segments, maxTime) {
     const totalTime = Math.max(maxTime, segments.length > 0 ? segments[segments.length - 1].end : 1);
     const viewWidth = 1100;
     const barY = 16, barH = 38, axisY = 66;
@@ -486,32 +1189,32 @@ function renderGanttSVG(segments, maxTime) {
     const scale = plotW / totalTime;
 
     let svg = `<svg class="gantt-svg" viewBox="0 0 ${viewWidth} 90" xmlns="http://www.w3.org/2000/svg">`;
-    svg += `<line x1="20" y1="${axisY}" x2="${viewWidth - 20}" y2="${axisY}" stroke="#94a3b8" stroke-width="1.5" />`;
+    svg += `<line x1="20" y1="${axisY}" x2="${viewWidth - 20}" y2="${axisY}" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" />`;
 
     segments.forEach(seg => {
         const x1 = 20 + (seg.start * scale);
         const x2 = 20 + (seg.end * scale);
         const w = Math.max(1, x2 - x1);
 
-        let color = "#e2e8f0", textCol = "#64748b", label = "IDLE";
+        let color = "rgba(100, 116, 139, 0.3)", textCol = "#94a3b8", label = "IDLE";
         if (seg.pid !== "IDLE") {
-            const pNum = parseInt(seg.pid.replace("P", "")) || 1;
-            color = PID_COLORS[(pNum - 1) % PID_COLORS.length];
+            const pNum = parseInt(seg.pid.replace(/[^0-9]/g, "")) || 1;
+            color = PID_PALETTE[(pNum - 1) % PID_PALETTE.length];
             textCol = "#ffffff";
             label = `${seg.pid} (Q${seg.queue})`;
         }
 
-        svg += `<rect x="${x1.toFixed(1)}" y="${barY}" width="${w.toFixed(1)}" height="${barH}" fill="${color}" stroke="#ffffff" stroke-width="1" rx="4"/>`;
-        if (w > 36) svg += `<text x="${((x1 + x2)/2).toFixed(1)}" y="${barY + 23}" fill="${textCol}" font-size="11" font-weight="bold" text-anchor="middle">${label}</text>`;
+        svg += `<rect x="${x1.toFixed(1)}" y="${barY}" width="${w.toFixed(1)}" height="${barH}" fill="${color}" stroke="#0f172a" stroke-width="1.5" rx="6"/>`;
+        if (w > 36) svg += `<text x="${((x1 + x2)/2).toFixed(1)}" y="${barY + 23}" fill="${textCol}" font-size="11" font-weight="700" text-anchor="middle">${label}</text>`;
         else if (w > 18) svg += `<text x="${((x1 + x2)/2).toFixed(1)}" y="${barY + 23}" fill="${textCol}" font-size="9" text-anchor="middle">${seg.pid}</text>`;
 
-        svg += `<line x1="${x1.toFixed(1)}" y1="${axisY - 3}" x2="${x1.toFixed(1)}" y2="${axisY + 3}" stroke="#64748b"/>`;
-        svg += `<text x="${x1.toFixed(1)}" y="${axisY + 14}" font-size="9" fill="#475569" text-anchor="middle">${seg.start}</text>`;
+        svg += `<line x1="${x1.toFixed(1)}" y1="${axisY - 3}" x2="${x1.toFixed(1)}" y2="${axisY + 3}" stroke="rgba(255,255,255,0.3)"/>`;
+        svg += `<text x="${x1.toFixed(1)}" y="${axisY + 14}" font-size="9" fill="#94a3b8" text-anchor="middle" font-family="'JetBrains Mono', monospace">${seg.start}</text>`;
     });
 
     const lastX = 20 + (totalTime * scale);
-    svg += `<line x1="${lastX.toFixed(1)}" y1="${axisY - 3}" x2="${lastX.toFixed(1)}" y2="${axisY + 3}" stroke="#64748b"/>`;
-    svg += `<text x="${lastX.toFixed(1)}" y="${axisY + 14}" font-size="9" fill="#475569" text-anchor="middle">${totalTime}</text>`;
+    svg += `<line x1="${lastX.toFixed(1)}" y1="${axisY - 3}" x2="${lastX.toFixed(1)}" y2="${axisY + 3}" stroke="rgba(255,255,255,0.3)"/>`;
+    svg += `<text x="${lastX.toFixed(1)}" y="${axisY + 14}" font-size="9" fill="#94a3b8" text-anchor="middle" font-family="'JetBrains Mono', monospace">${totalTime}</text>`;
     svg += `</svg>`;
     return svg;
 }
@@ -521,24 +1224,26 @@ function renderTable(tableId, procs) {
     tbody.innerHTML = "";
     procs.forEach(p => {
         const isDone = p.remaining === 0;
-        const badgeCls = isDone ? "badge-term" : "badge-ready";
+        const badgeCls = isDone ? "status-term" : "status-ready";
         const row = `<tr>
-            <td><strong>${p.pid}</strong></td>
+            <td style="color:#f8fafc; font-weight:700;">${p.pid}</td>
             <td>${p.arrival}</td>
             <td>${p.burst}</td>
             <td>${p.remaining}</td>
-            <td><span class="group-pill" style="background:#64748b; font-size:10px;">Q${p.queue}</span></td>
+            <td><span class="badge-status status-run">Q${p.queue}</span></td>
             <td><span class="badge-status ${badgeCls}">${isDone ? 'TERMINATED' : 'READY'}</span></td>
             <td>${p.completionTime !== null ? p.completionTime : '-'}</td>
-            <td><strong>${p.tat !== null ? p.tat : '-'}</strong></td>
-            <td><strong>${p.wt}</strong></td>
+            <td style="color:var(--cyan); font-weight:700;">${p.tat !== null ? p.tat : '-'}</td>
+            <td style="color:var(--emerald); font-weight:700;">${p.wt}</td>
             <td>${p.rt !== null ? p.rt : '-'}</td>
         </tr>`;
         tbody.innerHTML += row;
     });
 }
 
-function runSimulator() {
+function runInstantSimulator() {
+    stopAnimation();
+
     const q = parseInt(document.getElementById("inpQuantum").value) || 3;
     const simTime = parseInt(document.getElementById("inpSimTime").value) || 60;
     const n = parseInt(document.getElementById("inpProcs").value) || 8;
@@ -547,7 +1252,7 @@ function runSimulator() {
     const maxBurst = parseInt(document.getElementById("inpMaxBurst").value) || 14;
     const seed = parseInt(document.getElementById("inpSeed").value) || 42;
 
-    document.getElementById("lblFixedBurst").innerText = fixedBurst;
+    document.getElementById("lblFixedB").innerText = fixedBurst;
 
     const prng = new PRNG(seed);
     const arrivals = [0];
@@ -563,87 +1268,224 @@ function runSimulator() {
         varWorkload.push({ pid, arrival: arr, burst: prng.nextInt(minBurst, maxBurst) });
     }
 
-    const resFixed = simulateMLFQ(fixedWorkload, q, simTime, 3);
-    const resVar = simulateMLFQ(varWorkload, q, simTime, 3);
+    if (globalCustomProcs.length > 0) {
+        globalCustomProcs.forEach(cp => {
+            fixedWorkload.push({ ...cp });
+            varWorkload.push({ ...cp });
+        });
+    }
 
-    // Update KPI Cards
-    document.getElementById("valFixedAWT").innerText = resFixed.awt;
-    document.getElementById("valVarAWT").innerText = resVar.awt;
-    document.getElementById("valFixedATT").innerText = resFixed.att;
-    document.getElementById("valVarATT").innerText = resVar.att;
-    document.getElementById("valFixedDone").innerText = `${resFixed.doneCount} / ${n}`;
-    document.getElementById("valVarDone").innerText = `${resVar.doneCount} / ${n}`;
-    document.getElementById("valFixedCPU").innerText = `${resFixed.cpu}%`;
-    document.getElementById("valVarCPU").innerText = `${resVar.cpu}%`;
-    document.getElementById("valFixedTP").innerText = resFixed.tp;
-    document.getElementById("valVarTP").innerText = resVar.tp;
+    latestFixedRes = simulateMLFQEngine(fixedWorkload, q, simTime, 3);
+    latestVarRes = simulateMLFQEngine(varWorkload, q, simTime, 3);
 
-    // Render Gantt
-    document.getElementById("ganttFixedContainer").innerHTML = renderGanttSVG(resFixed.gantt, simTime);
-    document.getElementById("ganttVarContainer").innerHTML = renderGanttSVG(resVar.gantt, simTime);
+    // Update KPI Tiles
+    document.getElementById("valFixedAWT").innerText = `${latestFixedRes.awt}u`;
+    document.getElementById("valVarAWT").innerText = `${latestVarRes.awt}u`;
+    document.getElementById("valFixedATT").innerText = `${latestFixedRes.att}u`;
+    document.getElementById("valVarATT").innerText = `${latestVarRes.att}u`;
+    document.getElementById("valFixedDone").innerText = `${latestFixedRes.doneCount} / ${latestFixedRes.total}`;
+    document.getElementById("valVarDone").innerText = `${latestVarRes.doneCount} / ${latestVarRes.total}`;
+    document.getElementById("valFixedCPU").innerText = `${latestFixedRes.cpu}%`;
+    document.getElementById("valVarCPU").innerText = `${latestVarRes.cpu}%`;
+    document.getElementById("valFixedTP").innerText = latestFixedRes.tp;
+    document.getElementById("valVarTP").innerText = latestVarRes.tp;
+
+    // Render Gantt Charts
+    document.getElementById("ganttFixedBox").innerHTML = renderGantt(latestFixedRes.gantt, simTime);
+    document.getElementById("ganttVarBox").innerHTML = renderGantt(latestVarRes.gantt, simTime);
 
     // Render Tables
-    renderTable("tblFixed", resFixed.procs);
-    renderTable("tblVar", resVar.procs);
+    renderTable("tblFixed", latestFixedRes.procs);
+    renderTable("tblVar", latestVarRes.procs);
 
-    // Render Queue Tracks (from Variable mode state)
-    renderQueueTracks(resVar);
+    // Render Queue Tracks
+    renderLiveQueues(latestVarRes.procs);
 
-    // Render Comparison Table
-    renderComparisonTable(resFixed, resVar, n, simTime, q);
+    // Render Comparison Matrix
+    renderComparisonMatrix(latestFixedRes, latestVarRes, simTime, q);
+
+    // Render Math derivations
+    renderMathInspector(latestVarRes);
+
+    document.getElementById("clockDisplay").innerText = simTime;
+    document.getElementById("cpuActiveProc").innerText = "Execution Concluded (T=" + simTime + ")";
+    document.getElementById("quantumLeftDisplay").innerText = "0";
 }
 
-function renderQueueTracks(res) {
-    const q0El = document.getElementById("trackQ0");
-    const q1El = document.getElementById("trackQ1");
-    const q2El = document.getElementById("trackQ2");
+function renderLiveQueues(procs) {
+    const q0 = document.getElementById("slotQ0");
+    const q1 = document.getElementById("slotQ1");
+    const q2 = document.getElementById("slotQ2");
 
-    q0El.innerHTML = ""; q1El.innerHTML = ""; q2El.innerHTML = "";
+    q0.innerHTML = ""; q1.innerHTML = ""; q2.innerHTML = "";
 
-    const activeQ0 = res.procs.filter(p => p.remaining > 0 && p.queue === 0);
-    const activeQ1 = res.procs.filter(p => p.remaining > 0 && p.queue === 1);
-    const activeQ2 = res.procs.filter(p => p.remaining > 0 && p.queue === 2);
+    const activeQ0 = procs.filter(p => p.remaining > 0 && p.queue === 0);
+    const activeQ1 = procs.filter(p => p.remaining > 0 && p.queue === 1);
+    const activeQ2 = procs.filter(p => p.remaining > 0 && p.queue === 2);
 
-    if (activeQ0.length === 0) q0El.innerHTML = '<span style="color:#94a3b8; font-size:12px;">Empty (all jobs completed or demoted)</span>';
-    else activeQ0.forEach(p => q0El.innerHTML += `<div class="proc-chip">${p.pid} <span class="proc-chip-rem">rem:${p.remaining}</span></div>`);
+    if (activeQ0.length === 0) q0.innerHTML = '<span class="queue-empty-msg">Empty</span>';
+    else activeQ0.forEach(p => q0.innerHTML += `<div class="pcb-chip">${p.pid} <span class="pcb-chip-rem">${p.remaining}u</span></div>`);
 
-    if (activeQ1.length === 0) q1El.innerHTML = '<span style="color:#94a3b8; font-size:12px;">Empty</span>';
-    else activeQ1.forEach(p => q1El.innerHTML += `<div class="proc-chip">${p.pid} <span class="proc-chip-rem">rem:${p.remaining}</span></div>`);
+    if (activeQ1.length === 0) q1.innerHTML = '<span class="queue-empty-msg">Empty</span>';
+    else activeQ1.forEach(p => q1.innerHTML += `<div class="pcb-chip">${p.pid} <span class="pcb-chip-rem">${p.remaining}u</span></div>`);
 
-    if (activeQ2.length === 0) q2El.innerHTML = '<span style="color:#94a3b8; font-size:12px;">Empty</span>';
-    else activeQ2.forEach(p => q2El.innerHTML += `<div class="proc-chip">${p.pid} <span class="proc-chip-rem">rem:${p.remaining}</span></div>`);
+    if (activeQ2.length === 0) q2.innerHTML = '<span class="queue-empty-msg">Empty</span>';
+    else activeQ2.forEach(p => q2.innerHTML += `<div class="pcb-chip">${p.pid} <span class="pcb-chip-rem">${p.remaining}u</span></div>`);
 }
 
-function renderComparisonTable(f, v, n, simTime, q) {
-    const tbody = document.getElementById("tblComparisonBody");
+function renderComparisonMatrix(f, v, simTime, q) {
+    const tbody = document.getElementById("tblCompareBody");
     tbody.innerHTML = `
-        <tr><td>Total Processes Generated</td><td>${n}</td><td>${n}</td></tr>
-        <tr><td>Completed Processes</td><td><strong>${f.doneCount}</strong></td><td><strong>${v.doneCount}</strong></td></tr>
-        <tr><td>Incomplete / In-Flight</td><td>${n - f.doneCount}</td><td>${n - v.doneCount}</td></tr>
-        <tr><td>Round Robin Time Quantum</td><td>${q} units</td><td>${q} units</td></tr>
-        <tr><td>Simulation Time Limit</td><td>${simTime} units</td><td>${simTime} units</td></tr>
-        <tr><td>Average Waiting Time (AWT)</td><td><strong>${f.awt} units</strong></td><td><strong>${v.awt} units</strong></td></tr>
-        <tr><td>Average Turnaround Time (ATT)</td><td><strong>${f.att} units</strong></td><td><strong>${v.att} units</strong></td></tr>
-        <tr><td>Average Response Time (ART)</td><td>${f.art} units</td><td>${v.art} units</td></tr>
-        <tr><td>CPU Utilization</td><td><strong>${f.cpu}%</strong></td><td><strong>${v.cpu}%</strong></td></tr>
-        <tr><td>Throughput (processes/unit)</td><td>${f.tp}</td><td>${v.tp}</td></tr>
+        <tr><td>Completed Workload</td><td><strong>${f.doneCount} / ${f.total}</strong></td><td><strong>${v.doneCount} / ${v.total}</strong></td><td>Fixed burst enables uniform completion; Variable isolates short jobs first.</td></tr>
+        <tr><td>Average Waiting Time (AWT)</td><td><strong style="color:var(--cyan);">${f.awt} units</strong></td><td><strong style="color:var(--emerald);">${v.awt} units</strong></td><td>Short jobs in Variable mode complete with near-zero queue wait in Q0.</td></tr>
+        <tr><td>Average Turnaround Time (ATT)</td><td><strong style="color:var(--cyan);">${f.att} units</strong></td><td><strong style="color:var(--emerald);">${v.att} units</strong></td><td>MLFQ yields lower turnaround time for interactive workloads.</td></tr>
+        <tr><td>Average Response Time (ART)</td><td>${f.art} units</td><td>${v.art} units</td><td>Response time to first touch CPU remains rapid across all new arrivals.</td></tr>
+        <tr><td>CPU Core Utilization</td><td><strong style="color:var(--cyan);">${f.cpu}%</strong></td><td><strong style="color:var(--emerald);">${v.cpu}%</strong></td><td>Higher utilization under continuous variable CPU bursts.</td></tr>
+        <tr><td>Throughput Rate</td><td>${f.tp} proc/unit</td><td>${v.tp} proc/unit</td><td>Completed processes per unit of simulation horizon.</td></tr>
+        <tr><td>Time Quantum per Queue Slice</td><td>${q} units</td><td>${q} units</td><td>Strict Round Robin time slicing bound enforced across queues.</td></tr>
     `;
+}
+
+function renderMathInspector(res) {
+    const box = document.getElementById("processMathInspector");
+    const completedSample = res.completed.slice(0, 4);
+    if (completedSample.length === 0) {
+        box.innerHTML = "No completed processes in current horizon. Increase simulation time limit to observe completions.";
+        return;
+    }
+
+    let out = "Step-by-Step Numerical Calculations for Completed Workload:
+";
+    completedSample.forEach(p => {
+        out += `▶ [${p.pid}] Arrival=${p.arrival}, Burst=${p.burst}, Completion=${p.completionTime}
+`;
+        out += `   TAT = Completion (${p.completionTime}) - Arrival (${p.arrival}) = ${p.tat} units
+`;
+        out += `   WT  = TAT (${p.tat}) - Burst (${p.burst}) = ${p.wt} units
+
+`;
+    });
+    out += `AWT Calculation: (${res.completed.map(p => p.wt).join(' + ')}) / ${res.completed.length} = ${res.awt} units
+`;
+    out += `ATT Calculation: (${res.completed.map(p => p.tat).join(' + ')}) / ${res.completed.length} = ${res.att} units`;
+    box.innerText = out;
+}
+
+// Step & Animation
+function togglePlayAnimation() {
+    if (isAnimating) {
+        stopAnimation();
+    } else {
+        startAnimation();
+    }
+}
+
+function startAnimation() {
+    runInstantSimulator();
+    if (!latestVarRes || !latestVarRes.ticksHistory.length) return;
+
+    isAnimating = true;
+    document.getElementById("btnPlayPause").innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> Pause`;
+    animCurrentTick = 0;
+
+    const speed = parseInt(document.getElementById("animSpeed").value) || 300;
+    animInterval = setInterval(() => {
+        if (animCurrentTick >= latestVarRes.ticksHistory.length) {
+            stopAnimation();
+            return;
+        }
+        applyTick(animCurrentTick);
+        animCurrentTick++;
+    }, speed);
+}
+
+function stopAnimation() {
+    isAnimating = false;
+    if (animInterval) clearInterval(animInterval);
+    document.getElementById("btnPlayPause").innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Play Step Animation`;
+}
+
+function stepForwardOneTick() {
+    if (!latestVarRes) runInstantSimulator();
+    if (animCurrentTick < latestVarRes.ticksHistory.length) {
+        applyTick(animCurrentTick);
+        animCurrentTick++;
+    }
+}
+
+function applyTick(tickIdx) {
+    const snap = latestVarRes.ticksHistory[tickIdx];
+    document.getElementById("clockDisplay").innerText = snap.t;
+    document.getElementById("cpuActiveProc").innerText = snap.runningPid;
+    document.getElementById("quantumLeftDisplay").innerText = snap.sliceLeft;
+
+    const q0 = document.getElementById("slotQ0");
+    const q1 = document.getElementById("slotQ1");
+    const q2 = document.getElementById("slotQ2");
+
+    q0.innerHTML = snap.q0.length ? snap.q0.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
+    q1.innerHTML = snap.q1.length ? snap.q1.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
+    q2.innerHTML = snap.q2.length ? snap.q2.map(s => `<div class="pcb-chip">${s}</div>`).join('') : '<span class="queue-empty-msg">Empty</span>';
+}
+
+function applyPreset() {
+    const val = document.getElementById("presetSelect").value;
+    if (val === "standard") {
+        document.getElementById("inpQuantum").value = 3;
+        document.getElementById("inpSimTime").value = 60;
+        document.getElementById("inpProcs").value = 8;
+        document.getElementById("inpFixedBurst").value = 6;
+        document.getElementById("inpMinBurst").value = 2;
+        document.getElementById("inpMaxBurst").value = 14;
+    } else if (val === "interactive_short") {
+        document.getElementById("inpQuantum").value = 3;
+        document.getElementById("inpSimTime").value = 50;
+        document.getElementById("inpProcs").value = 6;
+        document.getElementById("inpFixedBurst").value = 3;
+        document.getElementById("inpMinBurst").value = 1;
+        document.getElementById("inpMaxBurst").value = 4;
+    } else if (val === "heavy_cpu") {
+        document.getElementById("inpQuantum").value = 3;
+        document.getElementById("inpSimTime").value = 80;
+        document.getElementById("inpProcs").value = 6;
+        document.getElementById("inpFixedBurst").value = 15;
+        document.getElementById("inpMinBurst").value = 10;
+        document.getElementById("inpMaxBurst").value = 25;
+    } else if (val === "preemption") {
+        document.getElementById("inpQuantum").value = 3;
+        document.getElementById("inpSimTime").value = 45;
+        document.getElementById("inpProcs").value = 5;
+        document.getElementById("inpFixedBurst").value = 7;
+        document.getElementById("inpMinBurst").value = 2;
+        document.getElementById("inpMaxBurst").value = 12;
+    }
+    runInstantSimulator();
 }
 
 function randomizeSeed() {
     document.getElementById("inpSeed").value = Math.floor(Math.random() * 9999) + 1;
-    runSimulator();
+    runInstantSimulator();
 }
 
-function switchTab(tabId) {
-    document.querySelectorAll(".tab-pane").forEach(el => el.style.display = "none");
+function switchMainTab(tabId) {
+    document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
     document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
     document.getElementById(tabId).style.display = "block";
     event.currentTarget.classList.add("active");
 }
 
-// Initial Run on Page Load
-window.onload = runSimulator;
+function openAddProcessModal() { document.getElementById("addProcModal").style.display = "flex"; }
+function closeAddProcessModal() { document.getElementById("addProcModal").style.display = "none"; }
+function submitCustomProcess() {
+    const pid = document.getElementById("custPid").value.trim() || "P_USER";
+    const arr = parseInt(document.getElementById("custArr").value) || 0;
+    const burst = parseInt(document.getElementById("custBurst").value) || 6;
+    globalCustomProcs.push({ pid, arrival: arr, burst });
+    closeAddProcessModal();
+    runInstantSimulator();
+}
+
+window.onload = runInstantSimulator;
 </script>
 
 </body>
