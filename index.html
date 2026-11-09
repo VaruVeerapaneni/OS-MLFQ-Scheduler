@@ -293,8 +293,11 @@ function createProcessInput(pid, arrival, burst) {
 }
 
 function addProcessRow() {
-    const count = document.querySelectorAll("#processInputRows tr").length + 1;
-    createProcessInput("P" + count, 0, 5);
+    const used = new Set([...document.querySelectorAll('#processInputRows [data-field="pid"]')]
+        .map(input => input.value.trim().toLowerCase()));
+    let next = 1;
+    while (used.has(("P" + next).toLowerCase())) next++;
+    createProcessInput("P" + next, 0, 5);
 }
 
 function loadSampleProcesses() {
@@ -326,9 +329,12 @@ function readManualWorkload() {
     const workload = rows.map((row, index) => {
         const get = field => row.querySelector('[data-field="' + field + '"]').value.trim();
         const pid = get("pid");
-        const arrival = Number(get("arrival"));
-        const burst = Number(get("burst"));
+        const arrivalText = get("arrival");
+        const burstText = get("burst");
         if (!pid) throw new Error("Process " + (index + 1) + " needs a Process ID.");
+        if (arrivalText === "" || burstText === "") throw new Error("Enter both arrival time and burst time for " + pid + ".");
+        const arrival = Number(arrivalText);
+        const burst = Number(burstText);
         if (!Number.isInteger(arrival) || arrival < 0) throw new Error("Arrival time must be a non-negative whole number for " + pid + ".");
         if (!Number.isInteger(burst) || burst < 1) throw new Error("Burst time must be a positive whole number for " + pid + ".");
         return { pid, arrival, burst };
@@ -340,8 +346,12 @@ function readManualWorkload() {
 
 function runSimulator() {
     stopAnimation();
-    const q = parseInt(document.getElementById("inpQuantum")?.value) || 3;
-    const simTime = parseInt(document.getElementById("inpSimTime")?.value) || 60;
+    const q = Number(document.getElementById("inpQuantum")?.value);
+    const simTime = Number(document.getElementById("inpSimTime")?.value);
+    if (!Number.isInteger(q) || q < 1 || !Number.isInteger(simTime) || simTime < 1) {
+        alert("Time quantum and simulation time must be positive whole numbers.");
+        return;
+    }
     const n = parseInt(document.getElementById("inpProcs")?.value) || 8;
     const minBurst = parseInt(document.getElementById("inpMinBurst")?.value) || 2;
     const maxBurst = parseInt(document.getElementById("inpMaxBurst")?.value) || 14;
