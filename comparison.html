@@ -254,8 +254,7 @@ function randomizeCmpSeed() {
 
 function exportComparisonCSV() {
     if (!lastFixedRes || !lastVarRes) return;
-    let csv = "MODE,PID,Arrival,Burst,Remaining,Queue,State,Completion,TAT,WT,RT
-";
+    let csv = "MODE,PID,Arrival,Burst,Remaining,Queue,State,Completion,TAT,WT,RT\n";
     lastFixedRes.procs.forEach(p => {
         csv += `FIXED,${p.pid},${p.arrival},${p.burst},${p.remaining},Q${p.queue},${p.state},${p.completionTime !== null ? p.completionTime : "N/A"},${p.tat !== null ? p.tat : "N/A"},${p.wt},${p.rt !== null ? p.rt : "N/A"}
 `;
