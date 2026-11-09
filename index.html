@@ -38,8 +38,30 @@
             <p class="page-subtitle">Real-time simulation of UNIX Multilevel Feedback Queues with Round Robin time slicing (Q = 3 units)</p>
         </div>
         <div class="btn-group">
-            <button class="btn btn-emerald" onclick="openAddProcessModal()">+ Add Custom PCB</button>
+            <button class="btn btn-emerald" onclick="addProcessRow()">+ Add Process</button>
             <button class="btn btn-secondary" onclick="exportSimulatorCSV()">📥 Export CSV</button>
+        </div>
+    </div>
+
+
+    <!-- Individual Process Input Table -->
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <div class="panel-title">🧩 Individual Process Configuration</div>
+                <p class="panel-hint">Enter a different arrival time and CPU burst for every process.</p>
+            </div>
+            <button class="btn btn-emerald" type="button" onclick="addProcessRow()">+ Add Process</button>
+        </div>
+        <div class="table-wrapper">
+            <table class="process-input-table">
+                <thead><tr><th>Process ID</th><th>Arrival Time</th><th>Burst Time</th><th>Action</th></tr></thead>
+                <tbody id="processInputRows"></tbody>
+            </table>
+        </div>
+        <div class="process-table-footer">
+            <span id="processCountLabel">4 processes configured</span>
+            <button class="btn btn-secondary" type="button" onclick="loadSampleProcesses()">↺ Load Sample Values</button>
         </div>
     </div>
 
@@ -204,30 +226,6 @@
 </div>
 
 <!-- Modal: Add Custom PCB -->
-<div class="modal-overlay" id="addProcModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 style="font-size:16px; font-weight:700;">Add Custom Process Control Block</h3>
-            <button class="modal-close-btn" onclick="closeAddProcessModal()">&times;</button>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-            <div class="input-box">
-                <label>Process PID</label>
-                <input type="text" id="custPid" value="P_CUSTOM">
-            </div>
-            <div class="input-box">
-                <label>Arrival Time (T)</label>
-                <input type="number" id="custArr" value="0" min="0">
-            </div>
-            <div class="input-box">
-                <label>CPU Burst Time</label>
-                <input type="number" id="custBurst" value="8" min="1">
-            </div>
-            <button class="btn btn-primary" onclick="submitCustomProcess()" style="margin-top:10px;">Add to Simulation</button>
-        </div>
-    </div>
-</div>
-
 <footer>
     <div class="main-wrapper" style="padding:0;">
         Operating Systems Course Simulation Project &bull; Problem #21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
@@ -236,11 +234,96 @@
 
 <script src="mlfq-engine.js"></script>
 <script>
-let globalCustomProcs = [];
 let animInterval = null;
 let animCurrentTick = 0;
 let isAnimating = false;
 let currentResult = null;
+
+function createProcessInput(pid, arrival, burst) {
+    const tbody = document.getElementById("processInputRows");
+    const row = document.createElement("tr");
+    const values = [
+        { value: pid, type: "text", label: "Process ID", className: "process-pid-input" },
+        { value: arrival, type: "number", label: "Arrival time", min: "0" },
+        { value: burst, type: "number", label: "Burst time", min: "1" }
+    ];
+    values.forEach((item, index) => {
+        const cell = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = item.type;
+        input.value = item.value;
+        input.setAttribute("aria-label", item.label);
+        if (item.min !== undefined) input.min = item.min;
+        if (item.className) input.className = item.className;
+        input.dataset.field = ["pid", "arrival", "burst"][index];
+        input.addEventListener("input", updateProcessCount);
+        cell.appendChild(input);
+        row.appendChild(cell);
+    });
+    const actionCell = document.createElement("td");
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "btn btn-remove-process";
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", () => {
+        if (tbody.rows.length <= 1) {
+            alert("At least one process is required.");
+            return;
+        }
+        row.remove();
+        updateProcessCount();
+    });
+    actionCell.appendChild(removeButton);
+    row.appendChild(actionCell);
+    tbody.appendChild(row);
+    updateProcessCount();
+}
+
+function addProcessRow() {
+    const count = document.querySelectorAll("#processInputRows tr").length + 1;
+    createProcessInput("P" + count, 0, 5);
+}
+
+function loadSampleProcesses() {
+    const tbody = document.getElementById("processInputRows");
+    tbody.innerHTML = "";
+    [
+        ["P1", 0, 5],
+        ["P2", 2, 8],
+        ["P3", 4, 3],
+        ["P4", 6, 12]
+    ].forEach(p => createProcessInput(p[0], p[1], p[2]));
+}
+
+function updateProcessCount() {
+    const count = document.querySelectorAll("#processInputRows tr").length;
+    const label = document.getElementById("processCountLabel");
+    if (label) label.textContent = count + (count === 1 ? " process configured" : " processes configured");
+}
+
+function handleWorkloadModeChange() {
+    const manual = document.getElementById("workloadMode").value === "manual";
+    document.getElementById("processInputRows").closest(".panel").style.display = manual ? "" : "none";
+    runSimulator();
+}
+
+function readManualWorkload() {
+    const rows = [...document.querySelectorAll("#processInputRows tr")];
+    if (!rows.length) throw new Error("Add at least one process before running the simulation.");
+    const workload = rows.map((row, index) => {
+        const get = field => row.querySelector('[data-field="' + field + '"]').value.trim();
+        const pid = get("pid");
+        const arrival = Number(get("arrival"));
+        const burst = Number(get("burst"));
+        if (!pid) throw new Error("Process " + (index + 1) + " needs a Process ID.");
+        if (!Number.isInteger(arrival) || arrival < 0) throw new Error("Arrival time must be a non-negative whole number for " + pid + ".");
+        if (!Number.isInteger(burst) || burst < 1) throw new Error("Burst time must be a positive whole number for " + pid + ".");
+        return { pid, arrival, burst };
+    });
+    const ids = workload.map(p => p.pid.toLowerCase());
+    if (new Set(ids).size !== ids.length) throw new Error("Every process must have a unique Process ID.");
+    return workload;
+}
 
 function runSimulator() {
     stopAnimation();
@@ -249,46 +332,47 @@ function runSimulator() {
     const n = parseInt(document.getElementById("inpProcs")?.value) || 8;
     const minBurst = parseInt(document.getElementById("inpMinBurst")?.value) || 2;
     const maxBurst = parseInt(document.getElementById("inpMaxBurst")?.value) || 14;
+    const fixedBurst = parseInt(document.getElementById("inpFixedBurst")?.value) || 6;
     const seed = parseInt(document.getElementById("inpSeed")?.value) || 42;
+    const mode = document.getElementById("workloadMode")?.value || "manual";
 
+    if (minBurst > maxBurst) {
+        alert("Minimum variable burst must not be greater than maximum variable burst.");
+        return;
+    }
     document.getElementById("lblQuantumMax").innerText = q;
 
-    const prng = new PRNG(seed);
-    const arrivals = [0];
-    for (let i = 1; i < n; i++) arrivals.push(prng.nextInt(0, 20));
-    arrivals.sort((a, b) => a - b);
-
-    const workload = [];
-    for (let i = 0; i < n; i++) {
-        workload.push({
-            pid: `P${i + 1}`,
-            arrival: arrivals[i],
-            burst: prng.nextInt(minBurst, maxBurst)
-        });
-    }
-
-    if (globalCustomProcs.length > 0) {
-        globalCustomProcs.forEach(cp => workload.push({ ...cp }));
+    let workload = [];
+    if (mode === "manual") {
+        try {
+            workload = readManualWorkload();
+        } catch (error) {
+            alert(error.message);
+            return;
+        }
+    } else {
+        const prng = new PRNG(seed);
+        const arrivals = [0];
+        for (let i = 1; i < n; i++) arrivals.push(prng.nextInt(0, 20));
+        arrivals.sort((a, b) => a - b);
+        for (let i = 0; i < n; i++) {
+            workload.push({
+                pid: "P" + (i + 1),
+                arrival: arrivals[i],
+                burst: mode === "fixed" ? fixedBurst : prng.nextInt(minBurst, maxBurst)
+            });
+        }
     }
 
     currentResult = simulateMLFQ(workload, q, simTime, 3);
-
-    // Update KPI values
-    document.getElementById("valAWT").innerText = `${currentResult.awt}u`;
-    document.getElementById("valATT").innerText = `${currentResult.att}u`;
-    document.getElementById("valDoneCount").innerText = `${currentResult.doneCount} / ${currentResult.total}`;
-    document.getElementById("valCPU").innerText = `${currentResult.cpu}%`;
+    document.getElementById("valAWT").innerText = currentResult.awt + "u";
+    document.getElementById("valATT").innerText = currentResult.att + "u";
+    document.getElementById("valDoneCount").innerText = currentResult.doneCount + " / " + currentResult.total;
+    document.getElementById("valCPU").innerText = currentResult.cpu + "%";
     document.getElementById("valThroughput").innerText = currentResult.tp;
-
-    // Render Gantt
     document.getElementById("ganttBox").innerHTML = renderGanttSVG(currentResult.gantt, simTime);
-
-    // Render Table
     renderTable("tblProcs", currentResult.procs);
-
-    // Render Live Queues
     renderLiveQueues(currentResult.procs);
-
     document.getElementById("clockDisplay").innerText = simTime;
     document.getElementById("cpuActiveProc").innerText = "Execution Concluded";
     document.getElementById("quantumLeftDisplay").innerText = "0";
@@ -393,7 +477,6 @@ function applyTick(tickIdx) {
 
 function resetSimulator() {
     stopAnimation();
-    globalCustomProcs = [];
     runSimulator();
 }
 
@@ -417,23 +500,12 @@ function applyPreset() {
     runSimulator();
 }
 
-function openAddProcessModal() { document.getElementById("addProcModal").style.display = "flex"; }
-function closeAddProcessModal() { document.getElementById("addProcModal").style.display = "none"; }
-
-function submitCustomProcess() {
-    const pid = document.getElementById("custPid")?.value.trim() || "P_USER";
-    const arr = parseInt(document.getElementById("custArr")?.value) || 0;
-    const burst = parseInt(document.getElementById("custBurst")?.value) || 8;
-    globalCustomProcs.push({ pid, arrival: arr, burst });
-    closeAddProcessModal();
-    runSimulator();
-}
-
 function exportSimulatorCSV() {
     if (currentResult && currentResult.procs) exportProcsCSV(currentResult.procs, "mlfq_simulation_metrics.csv");
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+    loadSampleProcesses();
     runSimulator();
 });
 </script>
