@@ -88,7 +88,7 @@
             </div>
             <div class="input-box">
                 <label>Number of Processes</label>
-                <div class="count-stepper"><button type="button" class="step-btn" aria-label="Decrease process count" onclick="changeProcessCount(-1)">−</button><input type="number" id="inpProcs" value="6" min="1" max="100" step="1" aria-label="Number of processes" onchange="setProcessCountFromInput()"><button type="button" class="step-btn" aria-label="Increase process count" onclick="changeProcessCount(1)">+</button></div>
+                <input type="number" id="inpProcs" class="count-input" value="6" min="1" max="100" step="1" aria-label="Number of processes" onchange="setProcessCountFromInput()">
             </div>
             <div class="input-box">
                 <label>Fixed Burst per Process (units)</label>
@@ -342,15 +342,6 @@ function syncManualRows(targetCount) {
         count--;
     }
     updateProcessCount();
-}
-
-function changeProcessCount(delta) {
-    const input = document.getElementById("inpProcs");
-    const current = Number(input.value) || 1;
-    const next = Math.max(1, Math.min(100, current + delta));
-    input.value = next;
-    if (document.getElementById("workloadMode").value === "manual") syncManualRows(next);
-    else runSimulator();
 }
 
 function setProcessCountFromInput() {
