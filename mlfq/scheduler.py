@@ -109,7 +109,7 @@ class MLFQScheduler:
                 for q_idx in range(self.num_queues):
                     if self.queues[q_idx]:
                         current_running = self.queues[q_idx].popleft()
-                        current_slice_remaining = self.time_slice
+                        current_slice_remaining = max(1, self.time_slice - current_running.time_spent_in_current_slice)
                         self._log(f"Dispatched {current_running.pid} from Q{q_idx} (Remaining burst: {current_running.remaining_time})")
                         break
 
