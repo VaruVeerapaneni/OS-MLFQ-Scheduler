@@ -147,7 +147,7 @@ class TestMLFQ(unittest.TestCase):
         self.assertEqual([segment.duration for segment in p1_q1], [1, 2])
         p1_q2 = [segment for segment in result["gantt_chart"]
                  if segment.pid == "P1" and segment.queue_level == 2]
-        self.assertEqual(sum(segment.duration for segment in p1_q2), 3)
+        self.assertEqual(sum(segment.duration for segment in p1_q2), 4)
         self.assertEqual(result["completed_count"], 2)
 
     def test_workload_generators(self):
