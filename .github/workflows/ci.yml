@@ -23,6 +23,29 @@ jobs:
       run: |
         python -m unittest test_mlfq.py -v
 
+    - name: Set up Node.js for browser script checks
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Validate inline JavaScript on every website page
+      run: |
+        python - <<'PY'
+        from pathlib import Path
+        import re
+        pages = ["index.html", "comparison.html", "calculations.html", "theory.html", "docs.html"]
+        for page in pages:
+            source = Path(page).read_text(encoding="utf-8")
+            scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", source, flags=re.S | re.I)
+            for index, script in enumerate(scripts):
+                if script.strip():
+                    Path(f"/tmp/{page}-{index}.js").write_text(script, encoding="utf-8")
+        PY
+        for script in /tmp/*.js; do
+          [ -f "$script" ] || continue
+          node --check "$script"
+        done
+
     - name: Run Comparative MLFQ Simulation
       run: |
         python cli.py --compare --sim-time 60 --processes 6
