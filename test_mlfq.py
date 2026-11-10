@@ -92,6 +92,37 @@ class TestMLFQ(unittest.TestCase):
         self.assertEqual(summary["simulation_time"], 10)
         self.assertEqual(summary["incomplete_processes"][0].remaining_time, 10)
 
+    def test_assignment_six_process_comparison_workload(self):
+        fixed, variable = generate_comparative_workload(
+            count=6,
+            fixed_burst=6,
+            min_burst=2,
+            max_burst=14,
+            max_arrival_time=20,
+            seed=42
+        )
+        self.assertEqual(len(fixed), 6)
+        self.assertEqual(len(variable), 6)
+        self.assertEqual([p.pid for p in fixed], [f"P{i}" for i in range(1, 7)])
+        self.assertEqual([p.pid for p in variable], [f"P{i}" for i in range(1, 7)])
+        self.assertEqual([p.arrival_time for p in fixed], [p.arrival_time for p in variable])
+        self.assertTrue(all(0 <= p.arrival_time <= 20 for p in fixed))
+        self.assertTrue(all(p.burst_time == 6 for p in fixed))
+        self.assertTrue(all(2 <= p.burst_time <= 14 for p in variable))
+
+        fixed_scheduler = MLFQScheduler(time_slice=3, num_queues=3, max_simulation_time=60)
+        variable_scheduler = MLFQScheduler(time_slice=3, num_queues=3, max_simulation_time=60)
+        fixed_result = fixed_scheduler.run(fixed)
+        variable_result = variable_scheduler.run(variable)
+        self.assertEqual(fixed_result["simulation_time"], 60)
+        self.assertEqual(variable_result["simulation_time"], 60)
+        self.assertEqual(fixed_result["total_processes"], 6)
+        self.assertEqual(variable_result["total_processes"], 6)
+        self.assertTrue(all(p.waiting_time >= 0 for p in fixed_result["completed_processes"]))
+        self.assertTrue(all(p.waiting_time >= 0 for p in variable_result["completed_processes"]))
+        self.assertTrue(all(p.turnaround_time == p.completion_time - p.arrival_time for p in fixed_result["completed_processes"]))
+        self.assertTrue(all(p.turnaround_time == p.completion_time - p.arrival_time for p in variable_result["completed_processes"]))
+
     def test_workload_generators(self):
         fixed_procs = generate_processes(count=5, mode="fixed", fixed_burst=6, seed=123)
         self.assertEqual(len(fixed_procs), 5)
