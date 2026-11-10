@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNIX MLFQ Process Scheduling Simulation | Problem #21</title>
+    <title>Round Robin Time Slicing with Multilevel Feedback | Process Scheduler</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,9 +16,9 @@
         <a href="index.html" class="nav-brand">
             <div class="brand-icon">⚡</div>
             <div>
-                <div class="brand-title">UNIX MLFQ Scheduler</div>
+                <div class="brand-title">Round Robin MLFQ</div>
             </div>
-            <span class="brand-tag">Problem #21</span>
+            <span class="brand-tag">OS PROJECT</span>
         </a>
         <ul class="nav-links">
             <li><a href="index.html" class="nav-link active">🎮 Simulator</a></li>
@@ -39,8 +39,8 @@
 <div class="main-wrapper">
     <div class="page-header">
         <div>
-            <h1 class="page-title">⚡ Interactive MLFQ Simulator</h1>
-            <p class="page-subtitle">Real-time simulation of UNIX Multilevel Feedback Queues with Round Robin time slicing (Q = 3 units)</p>
+            <h1 class="page-title">Round Robin Time Slicing with Multilevel Feedback</h1>
+            <p class="page-subtitle">Compare fixed and randomized CPU burst workloads across three feedback queues using a 3-unit Round Robin time slice.</p>
         </div>
         <div class="btn-group">
             <button class="btn btn-emerald" onclick="addProcessRow()">+ Add Process</button>
@@ -80,26 +80,26 @@
         <div class="params-grid">
             <div class="input-box">
                 <label>Time Quantum (Q)</label>
-                <input type="number" id="inpQuantum" value="3" min="1" max="10">
+                <input type="number" id="inpQuantum" value="3" min="3" max="3" readonly aria-label="Fixed time quantum of 3 units">
             </div>
             <div class="input-box">
                 <label>Simulation Time (T_sim)</label>
                 <input type="number" id="inpSimTime" value="60" min="10" max="300">
             </div>
             <div class="input-box">
-                <label>Process Count (N)</label>
-                <input type="number" id="inpProcs" value="8" min="2" max="25">
+                <label>Number of Processes</label>
+                <input type="number" id="inpProcs" value="6" min="6" max="6" readonly aria-label="Six processes">
             </div>
             <div class="input-box">
-                <label>Fixed Burst (units)</label>
+                <label>Fixed Burst per Process (units)</label>
                 <input type="number" id="inpFixedBurst" value="6" min="1" max="30">
             </div>
             <div class="input-box">
-                <label>Min Var Burst</label>
+                <label>Random Burst Minimum</label>
                 <input type="number" id="inpMinBurst" value="2" min="1" max="20">
             </div>
             <div class="input-box">
-                <label>Max Var Burst</label>
+                <label>Random Burst Maximum</label>
                 <input type="number" id="inpMaxBurst" value="14" min="2" max="40">
             </div>
             <div class="input-box">
@@ -109,9 +109,9 @@
             <div class="input-box">
                 <label>Workload Mode</label>
                 <select id="workloadMode" onchange="handleWorkloadModeChange()">
-                    <option value="manual" selected>Manual — individual process values</option>
-                    <option value="random">Random variable burst times</option>
-                    <option value="fixed">Fixed burst time</option>
+                    <option value="fixed" selected>Fixed burst times</option>
+                    <option value="random">Randomized burst times</option>
+                    <option value="manual">Manual — individual process values</option>
                 </select>
             </div>
             <div class="input-box">
@@ -241,7 +241,7 @@
 <!-- Modal: Add Custom PCB -->
 <footer>
     <div class="main-wrapper" style="padding:0;">
-        Operating Systems Course Simulation Project &bull; Problem #21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
+        Operating Systems Course Simulation Project &bull; Assignment 21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
     </div>
 </footer>
 
@@ -304,10 +304,8 @@ function loadSampleProcesses() {
     const tbody = document.getElementById("processInputRows");
     tbody.innerHTML = "";
     [
-        ["P1", 0, 5],
-        ["P2", 2, 8],
-        ["P3", 4, 3],
-        ["P4", 6, 12]
+        ["P1", 0, 6], ["P2", 2, 6], ["P3", 4, 6],
+        ["P4", 6, 6], ["P5", 8, 6], ["P6", 10, 6]
     ].forEach(p => createProcessInput(p[0], p[1], p[2]));
 }
 
@@ -346,13 +344,13 @@ function readManualWorkload() {
 
 function runSimulator() {
     stopAnimation();
-    const q = Number(document.getElementById("inpQuantum")?.value);
+    const q = 3;
     const simTime = Number(document.getElementById("inpSimTime")?.value);
-    if (!Number.isInteger(q) || q < 1 || !Number.isInteger(simTime) || simTime < 1) {
-        alert("Time quantum and simulation time must be positive whole numbers.");
+    if (!Number.isInteger(simTime) || simTime < 1) {
+        alert("Simulation time must be a positive whole number.");
         return;
     }
-    const n = parseInt(document.getElementById("inpProcs")?.value) || 8;
+    const n = 6;
     const minBurst = parseInt(document.getElementById("inpMinBurst")?.value) || 2;
     const maxBurst = parseInt(document.getElementById("inpMaxBurst")?.value) || 14;
     const fixedBurst = parseInt(document.getElementById("inpFixedBurst")?.value) || 6;
@@ -375,8 +373,7 @@ function runSimulator() {
         }
     } else {
         const prng = new PRNG(seed);
-        const arrivals = [0];
-        for (let i = 1; i < n; i++) arrivals.push(prng.nextInt(0, 20));
+        const arrivals = Array.from({ length: n }, () => prng.nextInt(0, 20));
         arrivals.sort((a, b) => a - b);
         for (let i = 0; i < n; i++) {
             workload.push({
@@ -512,7 +509,7 @@ function applyPreset() {
     const val = document.getElementById("presetSelect")?.value;
     const setV = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
     if (val === "standard") {
-        setV("inpQuantum", 3); setV("inpSimTime", 60); setV("inpProcs", 8); setV("inpMinBurst", 2); setV("inpMaxBurst", 14);
+        setV("inpQuantum", 3); setV("inpSimTime", 60); setV("inpProcs", 6); setV("inpMinBurst", 2); setV("inpMaxBurst", 14);
     } else if (val === "interactive_short") {
         setV("inpQuantum", 3); setV("inpSimTime", 50); setV("inpProcs", 6); setV("inpMinBurst", 1); setV("inpMaxBurst", 4);
     } else if (val === "heavy_cpu") {
@@ -529,6 +526,7 @@ function exportSimulatorCSV() {
 
 window.addEventListener("DOMContentLoaded", () => {
     loadSampleProcesses();
+    document.getElementById("processInputRows").closest(".panel").style.display = "none";
     runSimulator();
 });
 </script>
