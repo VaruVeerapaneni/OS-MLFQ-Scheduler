@@ -123,6 +123,33 @@ class TestMLFQ(unittest.TestCase):
         self.assertTrue(all(p.turnaround_time == p.completion_time - p.arrival_time for p in fixed_result["completed_processes"]))
         self.assertTrue(all(p.turnaround_time == p.completion_time - p.arrival_time for p in variable_result["completed_processes"]))
 
+    def test_variable_process_counts(self):
+        for count in (1, 2, 6, 12, 25):
+            fixed, variable = generate_comparative_workload(
+                count=count, fixed_burst=6, min_burst=2, max_burst=14,
+                max_arrival_time=20, seed=42
+            )
+            self.assertEqual(len(fixed), count)
+            self.assertEqual(len(variable), count)
+            self.assertEqual([p.pid for p in fixed], [f"P{i}" for i in range(1, count + 1)])
+            self.assertEqual([p.arrival_time for p in fixed], [p.arrival_time for p in variable])
+            self.assertTrue(all(p.burst_time == 6 for p in fixed))
+            self.assertTrue(all(2 <= p.burst_time <= 14 for p in variable))
+
+    def test_higher_priority_preemption_preserves_remaining_quantum(self):
+        scheduler = MLFQScheduler(time_slice=3, num_queues=3, max_simulation_time=20)
+        low = ProcessControlBlock("P1", arrival_time=0, burst_time=10)
+        high = ProcessControlBlock("P2", arrival_time=4, burst_time=1)
+        result = scheduler.run([low, high])
+
+        p1_q1 = [segment for segment in result["gantt_chart"]
+                 if segment.pid == "P1" and segment.queue_level == 1]
+        self.assertEqual([segment.duration for segment in p1_q1], [1, 2])
+        p1_q2 = [segment for segment in result["gantt_chart"]
+                 if segment.pid == "P1" and segment.queue_level == 2]
+        self.assertEqual(sum(segment.duration for segment in p1_q2), 3)
+        self.assertEqual(result["completed_count"], 2)
+
     def test_workload_generators(self):
         fixed_procs = generate_processes(count=5, mode="fixed", fixed_burst=6, seed=123)
         self.assertEqual(len(fixed_procs), 5)
