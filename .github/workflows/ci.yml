@@ -25,13 +25,13 @@ jobs:
 
     - name: Run Comparative MLFQ Simulation
       run: |
-        python cli.py --compare --sim-time 50 --processes 8
+        python cli.py --compare --sim-time 60 --processes 6
 
     - name: Publish Step Summary
       run: |
         cat << 'EOF' >> $GITHUB_STEP_SUMMARY
         # 🎓 OS Group Project 7: MLFQ Simulation Results
-        **Course:** Operating Systems | **Problem:** #21
+        **Course:** Operating Systems | **Project:** Round Robin Time Slicing with Multilevel Feedback
         
         ### 👥 Team Members
         - **AP24110010509** — VEERAPANENI VARALAKSHMI
