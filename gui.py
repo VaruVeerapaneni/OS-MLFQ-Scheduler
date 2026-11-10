@@ -80,15 +80,15 @@ class MLFQSimulatorGUI(tk.Tk):
 
         ttk.Label(row1, text="Time Quantum (Q):").pack(side=tk.LEFT, padx=(0, 4))
         self.quantum_var = tk.IntVar(value=3)
-        ttk.Spinbox(row1, from_=1, to=20, textvariable=self.quantum_var, width=5).pack(side=tk.LEFT, padx=(0, 16))
+        ttk.Spinbox(row1, from_=3, to=3, textvariable=self.quantum_var, width=5).pack(side=tk.LEFT, padx=(0, 16))
 
         ttk.Label(row1, text="Max Sim Time (T):").pack(side=tk.LEFT, padx=(0, 4))
         self.sim_time_var = tk.IntVar(value=60)
         ttk.Spinbox(row1, from_=10, to=500, textvariable=self.sim_time_var, width=6).pack(side=tk.LEFT, padx=(0, 16))
 
         ttk.Label(row1, text="Processes (N):").pack(side=tk.LEFT, padx=(0, 4))
-        self.num_procs_var = tk.IntVar(value=8)
-        ttk.Spinbox(row1, from_=2, to=30, textvariable=self.num_procs_var, width=5).pack(side=tk.LEFT, padx=(0, 16))
+        self.num_procs_var = tk.IntVar(value=6)
+        ttk.Spinbox(row1, from_=6, to=6, textvariable=self.num_procs_var, width=5).pack(side=tk.LEFT, padx=(0, 16))
 
         ttk.Label(row1, text="Fixed Burst:").pack(side=tk.LEFT, padx=(0, 4))
         self.fixed_burst_var = tk.IntVar(value=6)
