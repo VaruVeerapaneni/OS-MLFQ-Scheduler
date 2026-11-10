@@ -1,6 +1,6 @@
-# UNIX Process Scheduling Simulation: Round Robin Time Slicing with Multilevel Feedback (MLFQ)
+# Round Robin Time Slicing with Multilevel Feedback (MLFQ)
 
-**Operating Systems Course Project — Problem #21**  
+**Operating Systems Course Project**  
 **Group Number:** 7
 
 [![Live Web Simulator](https://img.shields.io/badge/Live_Simulator-varuveerapaneni.github.io%2FOS--MLFQ--Scheduler-22c55e?style=for-the-badge&logo=googlechrome&logoColor=white)](https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/)
@@ -31,10 +31,11 @@
 ### Key Requirements Fulfilled:
 - **Round Robin Time Slicing:** Exact time quantum of **3 units** ($Q = 3$).
 - **Process Control Blocks (PCBs):** Complete representation including PID, Arrival Time, Burst Time, Remaining Time, Priority Queue Level, State, Timestamps, and Interval Logs.
-- **Random Arrival Times:** Randomly distributed arrival times for processes.
+- **Six Processes:** The assignment's default experiments use exactly six PCBs (P1–P6).
+- **Random Arrival Times:** All six processes receive randomized arrival timestamps; both comparison modes reuse the same arrival times.
 - **Dual Burst Modes:**
   1. **Fixed Burst Times:** All processes have identical CPU burst requirements (e.g., 6 units).
-  2. **Variable (Randomized) Burst Times:** Processes have uniformly distributed CPU burst requirements (e.g., 2–14 units).
+  2. **Variable (Randomized) Burst Times:** Processes have uniformly distributed CPU burst requirements (e.g., 2–14 units, generated independently for P1–P6).
 - **Fixed Total Simulation Time ($T_{sim}$):** Runs up to a fixed simulation time limit, evaluating completed processes and accounting for in-flight tasks.
 - **Performance Evaluation:** Computes **Average Waiting Time (AWT)**, **Average Turnaround Time (ATT)**, Average Response Time (ART), CPU Utilization, and Throughput.
 - **Multiple Interfaces:**
@@ -63,7 +64,7 @@ python cli.py
 
 #### 2. Run Head-to-Head Comparative CLI Mode (Automated)
 ```bash
-python cli.py --compare --sim-time 60 --processes 8
+python cli.py --compare --sim-time 60 --processes 6
 ```
 
 #### 3. Launch Desktop GUI (Tkinter)

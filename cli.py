@@ -118,7 +118,7 @@ def interactive_menu():
             run_comparative_simulation()
         elif choice == "2":
             try:
-                n = int(input("Number of processes [8]: ").strip() or "8")
+                n = int(input("Number of processes [6]: ").strip() or "6")
                 q = int(input("Round Robin Time slice [3]: ").strip() or "3")
                 t = int(input("Fixed simulation time [60]: ").strip() or "60")
                 fb = int(input("Fixed burst time [6]: ").strip() or "6")
@@ -154,7 +154,7 @@ def interactive_menu():
 def main():
     parser = argparse.ArgumentParser(description="UNIX MLFQ Process Scheduling Simulation (Group 7)")
     parser.add_argument("--compare", action="store_true", help="Run comparative simulation between fixed and variable burst times")
-    parser.add_argument("--processes", type=int, default=8, help="Number of processes (default: 8)")
+    parser.add_argument("--processes", type=int, default=6, help="Number of processes (default: 6)")
     parser.add_argument("--sim-time", type=int, default=60, help="Fixed simulation time limit (default: 60)")
     parser.add_argument("--quantum", type=int, default=3, help="Round Robin time slice (default: 3)")
     parser.add_argument("--fixed-burst", type=int, default=6, help="Fixed burst time (default: 6)")

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mathematical Derivations & Formulas | UNIX MLFQ</title>
+    <title>Scheduling Calculations | Round Robin MLFQ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,9 +16,9 @@
         <a href="index.html" class="nav-brand">
             <div class="brand-icon">⚡</div>
             <div>
-                <div class="brand-title">UNIX MLFQ Scheduler</div>
+                <div class="brand-title">Round Robin MLFQ</div>
             </div>
-            <span class="brand-tag">Problem #21</span>
+            <span class="brand-tag">OS PROJECT</span>
         </a>
         <ul class="nav-links">
             <li><a href="index.html" class="nav-link">🎮 Simulator</a></li>
@@ -112,19 +112,20 @@
 
 <footer>
     <div class="main-wrapper" style="padding:0;">
-        Operating Systems Course Simulation Project &bull; Problem #21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
+        Operating Systems Course Simulation Project &bull; Assignment 21: UNIX Round Robin Time Slicing (Q=3) with Multilevel Feedback Queues
     </div>
 </footer>
 
 <script src="mlfq-engine.js"></script>
 <script>
 function recalcMath() {
-    const arrivals = [0, 0, 3, 4, 7, 7, 8, 20];
-    const bursts = [13, 3, 12, 13, 10, 3, 11, 8];
-    const workload = [];
-    for (let i = 0; i < arrivals.length; i++) {
-        workload.push({ pid: `P${i + 1}`, arrival: arrivals[i], burst: bursts[i] });
-    }
+    const seedGenerator = new PRNG(42);
+    const arrivals = Array.from({ length: 6 }, () => seedGenerator.nextInt(0, 20)).sort((a, b) => a - b);
+    const workload = arrivals.map((arrival, index) => ({
+        pid: `P${index + 1}`,
+        arrival,
+        burst: 6
+    }));
 
     const res = simulateMLFQ(workload, 3, 60, 3);
     const box = document.getElementById("mathInspectorBox");
@@ -132,7 +133,7 @@ function recalcMath() {
 
     const lines = [
         "===========================================================================",
-        " STEP-BY-STEP NUMERICAL CALCULATIONS FOR COMPLETED PROCESSES",
+        " SIX-PROCESS FIXED-BURST EXPERIMENT — STEP-BY-STEP CALCULATIONS",
         "===========================================================================",
         ""
     ];

@@ -9,7 +9,7 @@ from .pcb import ProcessControlBlock
 
 
 def generate_processes(
-    count: int = 8,
+    count: int = 6,
     mode: str = "fixed",
     fixed_burst: int = 6,
     min_burst: int = 2,
@@ -27,7 +27,7 @@ def generate_processes(
 
     processes: List[ProcessControlBlock] = []
     
-    arrivals = [0] + [rng.randint(0, max_arrival_time) for _ in range(count - 1)]
+    arrivals = [rng.randint(0, max_arrival_time) for _ in range(count)]
     arrivals.sort()
 
     for i in range(count):
@@ -47,7 +47,7 @@ def generate_processes(
 
 
 def generate_comparative_workload(
-    count: int = 8,
+    count: int = 6,
     fixed_burst: int = 6,
     min_burst: int = 2,
     max_burst: int = 14,
@@ -63,7 +63,7 @@ def generate_comparative_workload(
     else:
         rng = random.Random()
 
-    arrivals = [0] + [rng.randint(0, max_arrival_time) for _ in range(count - 1)]
+    arrivals = [rng.randint(0, max_arrival_time) for _ in range(count)]
     arrivals.sort()
 
     fixed_procs = []
