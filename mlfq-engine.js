@@ -1,6 +1,6 @@
 // ==========================================================================
 // UNIX MLFQ Engine & Visualization Module
-// Problem #21: Round Robin Time Slicing (Q=3) with Multilevel Feedback
+// Round Robin Time Slicing (Q=3) with Multilevel Feedback
 // ==========================================================================
 
 class PRNG {
@@ -70,7 +70,7 @@ function simulateMLFQ(workload, timeSlice = 3, maxTime = 60, numQueues = 3) {
             for (let q = 0; q < numQueues; q++) {
                 if (queues[q].length > 0) {
                     running = queues[q].shift();
-                    sliceRemaining = timeSlice;
+                    sliceRemaining = Math.max(1, timeSlice - running.sliceSpent);
                     break;
                 }
             }
