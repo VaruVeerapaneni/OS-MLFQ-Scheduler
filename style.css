@@ -732,7 +732,11 @@ footer {
 @media (max-width: 560px) { .nav-container { padding-left: 14px; padding-right: 14px; } .brand-title { font-size: 15px; } .brand-tag { display: none; } .main-wrapper { padding-left: 14px; padding-right: 14px; } .page-header { align-items: flex-start; flex-direction: column; gap: 14px; } .params-grid { grid-template-columns: 1fr; } }
 
 
-/* Native number input spinner for process count */
+/* Process count uses a plain native number field; suppress any legacy +/- buttons. */
+.count-stepper > .step-btn,
+.count-stepper > button,
+.step-btn[aria-label*="process count"] { display: none !important; }
+.count-stepper { display: block; }
 .count-input { width: 100%; }
 .panel { transition: border-color .2s ease, transform .2s ease; }
 .panel:hover { border-color: rgba(148,163,184,.18); }
