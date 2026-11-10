@@ -31,11 +31,11 @@
 ### Key Requirements Fulfilled:
 - **Round Robin Time Slicing:** Exact time quantum of **3 units** ($Q = 3$).
 - **Process Control Blocks (PCBs):** Complete representation including PID, Arrival Time, Burst Time, Remaining Time, Priority Queue Level, State, Timestamps, and Interval Logs.
-- **Six Processes:** The assignment's default experiments use exactly six PCBs (P1–P6).
-- **Random Arrival Times:** All six processes receive randomized arrival timestamps; both comparison modes reuse the same arrival times.
+- **Flexible Process Count:** Starts with six example PCBs (P1–P6), but users can increase or decrease the process count; the simulator supports arbitrary positive process counts.
+- **Random Arrival Times:** Every generated process receives a randomized arrival timestamp; both comparison modes reuse the same arrival times.
 - **Dual Burst Modes:**
   1. **Fixed Burst Times:** All processes have identical CPU burst requirements (e.g., 6 units).
-  2. **Variable (Randomized) Burst Times:** Processes have uniformly distributed CPU burst requirements (e.g., 2–14 units, generated independently for P1–P6).
+  2. **Variable (Randomized) Burst Times:** Processes have uniformly distributed CPU burst requirements (e.g., 2–14 units, generated independently for every process).
 - **Fixed Total Simulation Time ($T_{sim}$):** Runs up to a fixed simulation time limit, evaluating completed processes and accounting for in-flight tasks.
 - **Performance Evaluation:** Computes **Average Waiting Time (AWT)**, **Average Turnaround Time (ATT)**, Average Response Time (ART), CPU Utilization, and Throughput.
 - **Multiple Interfaces:**
