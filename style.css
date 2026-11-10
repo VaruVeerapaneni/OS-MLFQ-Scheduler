@@ -741,7 +741,3 @@ footer {
 .process-input-table input { transition: border-color .16s ease, box-shadow .16s ease; }
 .btn { transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
 .btn:hover { transform: translateY(-1px); }
-@media (max-width: 560px) {
-    .count-stepper { grid-template-columns: 38px minmax(58px,1fr) 38px; }
-    .step-btn { min-height: 42px; }
-}
