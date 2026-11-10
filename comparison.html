@@ -65,7 +65,7 @@
             </div>
             <div class="input-box">
                 <label>Number of Processes</label>
-                <div class="count-stepper"><button type="button" class="step-btn" aria-label="Decrease comparison process count" onclick="changeComparisonCount(-1)">−</button><input type="number" id="cmpProcs" value="6" min="1" max="100" step="1" aria-label="Number of processes in each comparison workload" onchange="setComparisonCount()"><button type="button" class="step-btn" aria-label="Increase comparison process count" onclick="changeComparisonCount(1)">+</button></div>
+                <input type="number" id="cmpProcs" class="count-input" value="6" min="1" max="100" step="1" aria-label="Number of processes in each comparison workload" onchange="setComparisonCount()">
             </div>
             <div class="input-box">
                 <label>Fixed Burst per Process (units)</label>
@@ -252,12 +252,6 @@ function renderCmpTable(tableId, procs) {
             <td style="color:var(--emerald); font-weight:700;">${p.wt}</td>
         </tr>`;
     });
-}
-
-function changeComparisonCount(delta) {
-    const input = document.getElementById("cmpProcs");
-    input.value = Math.max(1, Math.min(100, (Number(input.value) || 1) + delta));
-    runComparison();
 }
 
 function setComparisonCount() {
