@@ -215,13 +215,13 @@ function runComparison() {
     // Matrix
     const tbody = document.getElementById("tblCompareBody");
     tbody.innerHTML = `
-        <tr><td><strong>Completed Processes</strong></td><td><strong style="color:#ffffff;">${lastFixedRes.doneCount} / ${lastFixedRes.total}</strong></td><td><strong style="color:#ffffff;">${lastVarRes.doneCount} / ${lastVarRes.total}</strong></td><td>Fixed mode provides predictable completion for identical jobs; Variable mode isolates short tasks first.</td></tr>
-        <tr><td><strong>Average Waiting Time (AWT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.awt} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.awt} units</strong></td><td>Short jobs in Variable mode finish with near-zero queue latency in Q0.</td></tr>
-        <tr><td><strong>Average Turnaround Time (ATT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.att} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.att} units</strong></td><td>MLFQ yields lower turnaround times for interactive workloads by approximating SJF.</td></tr>
-        <tr><td><strong>Average Response Time (ART)</strong></td><td>${lastFixedRes.art} units</td><td>${lastVarRes.art} units</td><td>Rapid CPU touch for all newly arriving tasks placed at Q0.</td></tr>
-        <tr><td><strong>CPU Core Utilization</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.cpu}%</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.cpu}%</strong></td><td>Continuous computation keeps core utilized near 100%.</td></tr>
-        <tr><td><strong>System Throughput</strong></td><td>${lastFixedRes.tp} proc/unit</td><td>${lastVarRes.tp} proc/unit</td><td>Completed processes per simulation horizon unit.</td></tr>
-        <tr><td><strong>Time Quantum Bound</strong></td><td>${q} units</td><td>${q} units</td><td>Strict Round Robin time slicing bound enforced across queues.</td></tr>
+        <tr><td><strong>Completed Processes</strong></td><td><strong style="color:#ffffff;">${lastFixedRes.doneCount} / ${lastFixedRes.total}</strong></td><td><strong style="color:#ffffff;">${lastVarRes.doneCount} / ${lastVarRes.total}</strong></td><td>Both modes use the same six process IDs and arrival timestamps.</td></tr>
+        <tr><td><strong>Average Waiting Time (AWT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.awt} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.awt} units</strong></td><td>Calculated only for processes completed within the fixed simulation horizon.</td></tr>
+        <tr><td><strong>Average Turnaround Time (ATT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.att} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.att} units</strong></td><td>Turnaround time is measured from arrival until completion.</td></tr>
+        <tr><td><strong>Average Response Time (ART)</strong></td><td>${lastFixedRes.art} units</td><td>${lastVarRes.art} units</td><td>Response time is first CPU start minus arrival time.</td></tr>
+        <tr><td><strong>CPU Core Utilization</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.cpu}%</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.cpu}%</strong></td><td>Busy CPU time divided by the fixed simulation horizon.</td></tr>
+        <tr><td><strong>System Throughput</strong></td><td>${lastFixedRes.tp} proc/unit</td><td>${lastVarRes.tp} proc/unit</td><td>Completed process count divided by the fixed simulation horizon.</td></tr>
+        <tr><td><strong>Time Quantum Bound</strong></td><td>${q} units</td><td>${q} units</td><td>All three feedback queues use the required 3-unit quantum.</td></tr>
     `;
 
     // Gantts
