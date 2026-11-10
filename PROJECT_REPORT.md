@@ -1,8 +1,8 @@
 # ACADEMIC PROJECT REPORT
 
-## PROJECT TITLE: UNIX Process Scheduling: Round Robin Time Slicing with Multilevel Feedback (MLFQ)
+## PROJECT TITLE: Round Robin Time Slicing with Multilevel Feedback (MLFQ)
 ### Course: Operating Systems
-### Project Group: Group 7 (Problem #21)
+### Project Group: Group 7
 
 ---
 
@@ -19,13 +19,13 @@
 
 ## 1. ABSTRACT
 
-Process scheduling is a foundational service of modern multiprogramming operating systems. Traditional UNIX implementations employ a priority-based Multilevel Feedback Queue (MLFQ) scheduler with Round Robin (RR) time slicing. This project presents a discrete-event simulation of the UNIX MLFQ scheduler configured with a time quantum of 3 units ($Q = 3$). Process Control Blocks (PCBs) arrive at random timestamps with both fixed burst time and variable (randomized) burst time distributions. The system executes over a fixed simulation horizon ($T_{sim}$), tracking CPU residency, queue degradation, preemption, and process completion. Comparative analysis demonstrates how MLFQ dynamically favors short, interactive tasks over CPU-intensive tasks, balancing turnaround times and system responsiveness.
+Process scheduling is a foundational service of modern multiprogramming operating systems. Traditional UNIX implementations employ a priority-based Multilevel Feedback Queue (MLFQ) scheduler with Round Robin (RR) time slicing. This project presents a discrete-event simulation of the UNIX MLFQ scheduler configured with a time quantum of 3 units ($Q = 3$). Exactly six Process Control Blocks (P1–P6) arrive at randomized timestamps. The fixed-burst experiment assigns the same configurable CPU burst to all six processes; the variable-burst experiment independently randomizes each process's CPU burst. Both experiments use identical arrival timestamps for a fair comparison. The system executes over a fixed simulation horizon ($T_{sim}$), tracking CPU residency, queue degradation, preemption, and process completion. Comparative analysis demonstrates how MLFQ dynamically favors short, interactive tasks over CPU-intensive tasks, balancing turnaround times and system responsiveness.
 
 ---
 
 ## 2. PROBLEM STATEMENT & OBJECTIVES
 
-### 2.1 Problem Statement (Problem #21)
+### 2.1 Problem Statement
 > *"UNIX operating system uses Round robin Time slicing with multilevel feedback for process scheduling. Assume that the processes (PCB's) arrive at random. Assume the time slice is 3 units. Simulate Round robin time slicing with fixed and variable (Randomized) burst times. Run the processes for fixed amount of time and find the average waiting time, average turn-around time of the processes completed."*
 
 ### 2.2 Project Objectives
