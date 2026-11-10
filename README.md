@@ -7,7 +7,7 @@
 [![GitHub Actions CI](https://img.shields.io/badge/CI_Simulation-Passed_100%25-38bdf8?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/VaruVeerapaneni/OS-MLFQ-Scheduler/actions)
 [![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Deployed-a855f7?style=for-the-badge&logo=github&logoColor=white)](https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/)
 
-> 🌐 **Live Web Application URL:** [https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/](https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/)  
+> 🌐 **Live Web Application URL:** [https://varuveerapaneni.github.io/Round-Robin-MLFQ/](https://varuveerapaneni.github.io/Round-Robin-MLFQ/)  
 > 💻 **Local Web Server (Port 8080):** [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
 ---
