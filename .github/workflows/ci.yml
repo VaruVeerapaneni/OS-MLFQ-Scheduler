@@ -36,7 +36,7 @@ jobs:
         pages = ["index.html", "comparison.html", "calculations.html", "theory.html", "docs.html"]
         for page in pages:
             source = Path(page).read_text(encoding="utf-8")
-            scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", source, flags=re.S | re.I)
+            scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", source, flags=re.S | re.I)
             for index, script in enumerate(scripts):
                 if script.strip():
                     Path(f"/tmp/{page}-{index}.js").write_text(script, encoding="utf-8")
