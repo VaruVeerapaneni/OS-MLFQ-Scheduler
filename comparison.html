@@ -40,7 +40,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Fixed vs Randomized Burst Comparison</h1>
-            <p class="page-subtitle">Six processes, identical randomized arrivals, fixed versus randomized CPU bursts, and a 3-unit Round Robin quantum.</p>
+            <p class="page-subtitle">Choose any process count. Both experiments use matching randomized arrivals and compare fixed versus randomized CPU bursts with a 3-unit Round Robin quantum.</p>
         </div>
         <div class="btn-group">
             <button class="btn btn-secondary" onclick="exportComparisonCSV()">📥 Export Comparison CSV</button>
@@ -65,7 +65,7 @@
             </div>
             <div class="input-box">
                 <label>Number of Processes</label>
-                <input type="number" id="cmpProcs" value="6" min="6" max="6" readonly aria-label="Six processes">
+                <div class="count-stepper"><button type="button" class="step-btn" aria-label="Decrease comparison process count" onclick="changeComparisonCount(-1)">−</button><input type="number" id="cmpProcs" value="6" min="1" max="100" step="1" aria-label="Number of processes in each comparison workload" onchange="setComparisonCount()"><button type="button" class="step-btn" aria-label="Increase comparison process count" onclick="changeComparisonCount(1)">+</button></div>
             </div>
             <div class="input-box">
                 <label>Fixed Burst per Process (units)</label>
@@ -178,7 +178,7 @@ let lastVarRes = null;
 function runComparison() {
     const q = 3;
     const simTime = Number(document.getElementById("cmpSimTime").value);
-    const n = 6;
+    const n = Math.max(1, Math.min(100, Number(document.getElementById("cmpProcs").value) || 6));
     if (!Number.isInteger(simTime) || simTime < 1) {
         alert("Simulation time must be a positive whole number.");
         return;
@@ -215,7 +215,7 @@ function runComparison() {
     // Matrix
     const tbody = document.getElementById("tblCompareBody");
     tbody.innerHTML = `
-        <tr><td><strong>Completed Processes</strong></td><td><strong style="color:#ffffff;">${lastFixedRes.doneCount} / ${lastFixedRes.total}</strong></td><td><strong style="color:#ffffff;">${lastVarRes.doneCount} / ${lastVarRes.total}</strong></td><td>Both modes use the same six process IDs and arrival timestamps.</td></tr>
+        <tr><td><strong>Completed Processes</strong></td><td><strong style="color:#ffffff;">${lastFixedRes.doneCount} / ${lastFixedRes.total}</strong></td><td><strong style="color:#ffffff;">${lastVarRes.doneCount} / ${lastVarRes.total}</strong></td><td>Both modes use the same ${n} process IDs and arrival timestamps.</td></tr>
         <tr><td><strong>Average Waiting Time (AWT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.awt} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.awt} units</strong></td><td>Calculated only for processes completed within the fixed simulation horizon.</td></tr>
         <tr><td><strong>Average Turnaround Time (ATT)</strong></td><td><strong style="color:var(--cyan);">${lastFixedRes.att} units</strong></td><td><strong style="color:var(--emerald);">${lastVarRes.att} units</strong></td><td>Turnaround time is measured from arrival until completion.</td></tr>
         <tr><td><strong>Average Response Time (ART)</strong></td><td>${lastFixedRes.art} units</td><td>${lastVarRes.art} units</td><td>Response time is first CPU start minus arrival time.</td></tr>
@@ -252,6 +252,18 @@ function renderCmpTable(tableId, procs) {
             <td style="color:var(--emerald); font-weight:700;">${p.wt}</td>
         </tr>`;
     });
+}
+
+function changeComparisonCount(delta) {
+    const input = document.getElementById("cmpProcs");
+    input.value = Math.max(1, Math.min(100, (Number(input.value) || 1) + delta));
+    runComparison();
+}
+
+function setComparisonCount() {
+    const input = document.getElementById("cmpProcs");
+    input.value = Math.max(1, Math.min(100, Math.floor(Number(input.value) || 1)));
+    runComparison();
 }
 
 function randomizeCmpSeed() {

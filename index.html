@@ -87,8 +87,8 @@
                 <input type="number" id="inpSimTime" value="60" min="10" max="300">
             </div>
             <div class="input-box">
-                <label>Base Process Count (fixed/random modes)</label>
-                <input type="number" id="inpProcs" value="6" min="6" max="6" readonly aria-label="Six processes">
+                <label>Number of Processes</label>
+                <div class="count-stepper"><button type="button" class="step-btn" aria-label="Decrease process count" onclick="changeProcessCount(-1)">−</button><input type="number" id="inpProcs" value="6" min="1" max="100" step="1" aria-label="Number of processes" onchange="setProcessCountFromInput()"><button type="button" class="step-btn" aria-label="Increase process count" onclick="changeProcessCount(1)">+</button></div>
             </div>
             <div class="input-box">
                 <label>Fixed Burst per Process (units)</label>
@@ -320,7 +320,45 @@ function loadSampleProcesses() {
 function updateProcessCount() {
     const count = document.querySelectorAll("#processInputRows tr").length;
     const label = document.getElementById("processCountLabel");
+    const countInput = document.getElementById("inpProcs");
     if (label) label.textContent = count + (count === 1 ? " process configured" : " processes configured");
+    if (countInput && document.getElementById("workloadMode").value === "manual") countInput.value = count;
+    const minus = document.querySelector(".step-btn[aria-label=\"Decrease process count\"]");
+    if (minus) minus.disabled = count <= 1;
+}
+
+function syncManualRows(targetCount) {
+    const tbody = document.getElementById("processInputRows");
+    let count = tbody.rows.length;
+    while (count < targetCount) {
+        const used = new Set([...tbody.querySelectorAll('[data-field="pid"]')].map(el => el.value.toLowerCase()));
+        let nextId = 1;
+        while (used.has(("P" + nextId).toLowerCase())) nextId++;
+        createProcessInput("P" + nextId, 0, 5);
+        count++;
+    }
+    while (count > targetCount && count > 1) {
+        tbody.deleteRow(-1);
+        count--;
+    }
+    updateProcessCount();
+}
+
+function changeProcessCount(delta) {
+    const input = document.getElementById("inpProcs");
+    const current = Number(input.value) || 1;
+    const next = Math.max(1, Math.min(100, current + delta));
+    input.value = next;
+    if (document.getElementById("workloadMode").value === "manual") syncManualRows(next);
+    else runSimulator();
+}
+
+function setProcessCountFromInput() {
+    const input = document.getElementById("inpProcs");
+    const value = Math.max(1, Math.min(100, Math.floor(Number(input.value) || 1)));
+    input.value = value;
+    if (document.getElementById("workloadMode").value === "manual") syncManualRows(value);
+    else runSimulator();
 }
 
 function handleWorkloadModeChange() {
@@ -337,7 +375,7 @@ function readManualWorkload() {
         const pid = get("pid");
         const arrivalText = get("arrival");
         const burstText = get("burst");
-        if (!pid) throw new Error("Process " + (index + 1) + " needs a Process ID.");
+        if (!/^[A-Za-z][A-Za-z0-9_-]{0,11}$/.test(pid)) throw new Error("Use a unique Process ID starting with a letter (up to 12 letters, numbers, _ or -).");
         if (arrivalText === "" || burstText === "") throw new Error("Enter both arrival time and burst time for " + pid + ".");
         const arrival = Number(arrivalText);
         const burst = Number(burstText);
@@ -358,7 +396,7 @@ function runSimulator() {
         alert("Simulation time must be a positive whole number.");
         return;
     }
-    const n = 6;
+    const n = Math.max(1, Math.min(100, Number(document.getElementById("inpProcs")?.value) || 6));
     const minBurst = parseInt(document.getElementById("inpMinBurst")?.value) || 2;
     const maxBurst = parseInt(document.getElementById("inpMaxBurst")?.value) || 14;
     const fixedBurst = parseInt(document.getElementById("inpFixedBurst")?.value) || 6;

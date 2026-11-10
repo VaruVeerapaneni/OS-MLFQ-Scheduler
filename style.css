@@ -730,3 +730,52 @@ footer {
 .nav-link { text-decoration: none; }
 .page-title { max-width: 900px; }
 @media (max-width: 560px) { .nav-container { padding-left: 14px; padding-right: 14px; } .brand-title { font-size: 15px; } .brand-tag { display: none; } .main-wrapper { padding-left: 14px; padding-right: 14px; } .page-header { align-items: flex-start; flex-direction: column; gap: 14px; } .params-grid { grid-template-columns: 1fr; } }
+
+
+/* Polished responsive process-count stepper */
+.count-stepper {
+    display: grid;
+    grid-template-columns: 42px minmax(64px, 1fr) 42px;
+    align-items: stretch;
+    gap: 7px;
+}
+.count-stepper input {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.count-stepper input::-webkit-outer-spin-button,
+.count-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.step-btn {
+    min-height: 40px;
+    border: 1px solid rgba(99,102,241,.42);
+    border-radius: 9px;
+    color: #eef2ff;
+    background: linear-gradient(145deg, rgba(99,102,241,.25), rgba(6,182,212,.16));
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+.step-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(34,211,238,.8);
+    background: linear-gradient(145deg, rgba(99,102,241,.42), rgba(6,182,212,.28));
+    box-shadow: 0 6px 18px rgba(6,182,212,.12);
+}
+.step-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.step-btn:disabled { opacity: .35; cursor: not-allowed; }
+.panel { transition: border-color .2s ease, transform .2s ease; }
+.panel:hover { border-color: rgba(148,163,184,.18); }
+.process-input-table tbody tr { transition: background .16s ease; }
+.process-input-table tbody tr:hover { background: rgba(99,102,241,.07); }
+.process-input-table input { transition: border-color .16s ease, box-shadow .16s ease; }
+.btn { transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
+.btn:hover { transform: translateY(-1px); }
+@media (max-width: 560px) {
+    .count-stepper { grid-template-columns: 38px minmax(58px,1fr) 38px; }
+    .step-btn { min-height: 42px; }
+}
