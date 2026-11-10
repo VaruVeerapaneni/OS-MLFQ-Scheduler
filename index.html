@@ -327,30 +327,37 @@ function updateProcessCount() {
     if (minus) minus.disabled = count <= 1;
 }
 
+function syncManualRows(targetCount) {
+    const tbody = document.getElementById("processInputRows");
+    let count = tbody.rows.length;
+    while (count < targetCount) {
+        const used = new Set([...tbody.querySelectorAll('[data-field="pid"]')].map(el => el.value.toLowerCase()));
+        let nextId = 1;
+        while (used.has(("P" + nextId).toLowerCase())) nextId++;
+        createProcessInput("P" + nextId, 0, 5);
+        count++;
+    }
+    while (count > targetCount && count > 1) {
+        tbody.deleteRow(-1);
+        count--;
+    }
+    updateProcessCount();
+}
+
 function changeProcessCount(delta) {
     const input = document.getElementById("inpProcs");
     const current = Number(input.value) || 1;
     const next = Math.max(1, Math.min(100, current + delta));
     input.value = next;
-    if (document.getElementById("workloadMode").value === "manual") {
-        const rows = document.querySelectorAll("#processInputRows tr");
-        if (next > rows.length) {
-            for (let i = rows.length; i < next; i++) addProcessRow();
-        } else {
-            for (let i = rows.length; i > next; i--) document.querySelector("#processInputRows tr:last-child")?.remove();
-            updateProcessCount();
-        }
-    } else {
-        runSimulator();
-    }
+    if (document.getElementById("workloadMode").value === "manual") syncManualRows(next);
+    else runSimulator();
 }
 
 function setProcessCountFromInput() {
     const input = document.getElementById("inpProcs");
     const value = Math.max(1, Math.min(100, Math.floor(Number(input.value) || 1)));
     input.value = value;
-    const delta = value - document.querySelectorAll("#processInputRows tr").length;
-    if (document.getElementById("workloadMode").value === "manual") changeProcessCount(delta);
+    if (document.getElementById("workloadMode").value === "manual") syncManualRows(value);
     else runSimulator();
 }
 
