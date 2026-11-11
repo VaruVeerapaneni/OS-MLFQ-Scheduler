@@ -737,7 +737,16 @@ footer {
 .count-stepper > button,
 .step-btn[aria-label*="process count"] { display: none !important; }
 .count-stepper { display: block; }
-.count-input { width: 100%; }
+.count-input {
+    width: 100%;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+.count-input::-webkit-outer-spin-button,
+.count-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 .panel { transition: border-color .2s ease, transform .2s ease; }
 .panel:hover { border-color: rgba(148,163,184,.18); }
 .process-input-table tbody tr { transition: background .16s ease; }
