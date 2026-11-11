@@ -5,7 +5,7 @@
 
 [![Live Web Simulator](https://img.shields.io/badge/Live_Simulator-varuveerapaneni.github.io%2FRound--Robin--MLFQ-22c55e?style=for-the-badge&logo=googlechrome&logoColor=white)](https://varuveerapaneni.github.io/Round-Robin-MLFQ/)
 [![GitHub Actions CI](https://img.shields.io/badge/CI_Simulation-Passed_100%25-38bdf8?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/VaruVeerapaneni/Round-Robin-MLFQ/actions)
-[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Deployed-a855f7?style=for-the-badge&logo=github&logoColor=white)](https://varuveerapaneni.github.io/OS-MLFQ-Scheduler/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-Deployed-a855f7?style=for-the-badge&logo=github&logoColor=white)](https://varuveerapaneni.github.io/Round-Robin-MLFQ/)
 
 > 🌐 **Live Web Application URL:** [https://varuveerapaneni.github.io/Round-Robin-MLFQ/](https://varuveerapaneni.github.io/Round-Robin-MLFQ/)  
 
