@@ -323,8 +323,6 @@ function updateProcessCount() {
     const countInput = document.getElementById("inpProcs");
     if (label) label.textContent = count + (count === 1 ? " process configured" : " processes configured");
     if (countInput && document.getElementById("workloadMode").value === "manual") countInput.value = count;
-    const minus = document.querySelector(".step-btn[aria-label=\"Decrease process count\"]");
-    if (minus) minus.disabled = count <= 1;
 }
 
 function syncManualRows(targetCount) {
